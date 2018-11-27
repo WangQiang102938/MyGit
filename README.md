@@ -1,0 +1,2 @@
+# MyGit
+Self training
