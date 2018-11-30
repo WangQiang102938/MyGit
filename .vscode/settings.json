@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "handyplus.h": "c",
+        "stdio.h": "c"
+    }
+}
