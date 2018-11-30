@@ -5,6 +5,7 @@
 #define HGP_THIS_OBJECT HGP_WINDOW_CONTAINER[window]->Layer[layer]->Object
 #define breakp breakpoint();
 
+
 int hgp_window_init(double x, double y)
 {
     hgp_layer_flag_1.layer_reverse_flag = 0;
