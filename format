@@ -1,0 +1,19 @@
+    Operate_Fan_Pointer-> x=
+    Operate_Fan_Pointer-> y=
+    Operate_Fan_Pointer-> r=
+    Operate_Fan_Pointer-> shell_color=
+    Operate_Fan_Pointer-> fill_color=
+    Operate_Fan_Pointer-> fill_flag=
+    Operate_Fan_Pointer-> stroke_lenth=
+    Operate_Fan_Pointer-> arc_start=
+    Operate_Fan_Pointer-> arc_value=
+
+    double x,
+    double y,
+    double r,
+    unsigned long shell_color,
+    unsigned long fill_color,
+    int fill_flag,
+    int stroke_lenth,
+    double arc_start,
+    double arc_value,
