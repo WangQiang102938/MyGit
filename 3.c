@@ -93,13 +93,12 @@ int fish_move(fish_container *container, double distance, double direct)
 }
 int main()
 {
-    int fishnum = 500;
+    int fishnum = 100;
     int wid = hgp_window_init(400, 400);
     fish_container fish1[fishnum];
     HgSetEventMask(HG_KEY_EVENT_MASK);
     hgevent *event;
     srand(time(NULL));
-
     double direct = HGP_DIRECT_LEFT;
     for (int i = 0;  i < fishnum; i++)
     {
@@ -110,7 +109,7 @@ int main()
         }
     }
     printf("testpoint1\n");
-    hgp_update(0);
+    //hgp_update(0);
     hgp_update(1);
     while (1)
     {

@@ -267,8 +267,8 @@ int hgp_update(int flag) //TODO:add obj
                 }
             }
         }
-        return 1;
-    }
+    } 
+    return 1;
 }
 
     int hgp_single_draw(HGP_OBJECT_WINDOW_INFO window_info)
