@@ -62,30 +62,6 @@ HGP_WINDOW_INFO *hgp_create_window(double x, double y, double window_location_x,
 
 HGP_LAYER_INFO* hgp_add_layer(HGP_WINDOW_INFO* window)
 {
-    int layer = -1;
-    for (int i = 0; i < HG_MAX_LAYERS; i++)
-    {
-        if (HGP_THIS_WINDOW->Layer[i] == NULL)
-        {
-            layer = i;
-            break;
-        }
-    }
-    if (layer != -1)
-    {
-        HGP_THIS_WINDOW->Layer[layer] = ((HGP_LAYER_INFO *)malloc(sizeof(HGP_LAYER_INFO)));
-        HGP_THIS_WINDOW->Layer[layer]->lid[0] = HgWAddLayer(HGP_THIS_WINDOW->wid);
-        HGP_THIS_WINDOW->Layer[layer]->lid[1] = HgWAddLayer(HGP_THIS_WINDOW->wid);
-        HGP_THIS_WINDOW->Layer[layer]->lid[2] = HgWAddLayer(HGP_THIS_WINDOW->wid);
-        HGP_THIS_WINDOW->Layer[layer]->BackGroundColor = HG_WHITE;
-
-        for (int i = 0; i < HGP_OBJECT_TOTAL_NUM; i++)
-        {
-            HGP_THIS_OBJECT[i] = NULL;
-        }
-    }
-    return layer;
-
     HGP_LAYER_INFO* new_layer_ptr=malloc(sizeof(HGP_LAYER_INFO));
     if(window->start_layer_node==NULL)
     {
@@ -93,6 +69,7 @@ HGP_LAYER_INFO* hgp_add_layer(HGP_WINDOW_INFO* window)
         new_layer_ptr->previous_layer_node=window;
         new_layer_ptr->next_layer_node=window;
         new_layer_ptr->node_info=HGP_LAYER_NODE_INFO_START;
+        new_layer_ptr->obj_start_node=NULL;
     }
     else
     {
@@ -118,103 +95,19 @@ HGP_LAYER_INFO* hgp_add_layer(HGP_WINDOW_INFO* window)
     {
         new_layer_ptr->lid[i]=HgWAddLayer(window->wid);
     }
-
+    new_layer_ptr->BackGroundColor=HG_WHITE;
+    return new_layer_ptr;
 }
 
-void *hgp_add_object(int obj_type_flag, int window, int layer) //TODO:add obj
+void *hgp_add_object(HGP_LAYER_INFO* layer,int type) //TODO:add obj
 {
-    int obj_id = -1;
-    for (int i = 0; i < HGP_OBJECT_TOTAL_NUM; i++)
+    HGP_OBJECT* new_object_ptr=malloc(sizeof(HGP_OBJECT));
+    if(layer->start_layer_node==NULL)
     {
-        if (HGP_THIS_OBJECT[i] == NULL)
-        {
-            obj_id = i;
-            break;
-        }
+        layer->start_layer_node=new_object_ptr;
+        new_object_ptr
     }
-    if (obj_id != -1)
-    {
-        switch (obj_type_flag)
-        {
-        case HGP_OBJECT_RECT_FLAG:
-        {
-            HGP_THIS_OBJECT[obj_id] = malloc(sizeof(HGP_OBJECT));
-            HGP_THIS_OBJECT[obj_id]->pointer = malloc(sizeof(HGP_RECT));
-            HGP_THIS_OBJECT[obj_id]->type = HGP_OBJECT_RECT_FLAG;
-            HGP_RECT *obj_pointer = HGP_THIS_OBJECT[obj_id]->pointer;
-            obj_pointer->window_info.window_id = window;
-            obj_pointer->window_info.layer_id = layer;
-            obj_pointer->window_info.object_pointer_id = obj_id;
-            HGP_THIS_OBJECT[obj_id]->window_info = obj_pointer->window_info;
-            return obj_pointer;
-        }
-        case HGP_OBJECT_CIRCLE_FLAG:
-        {
-            HGP_THIS_OBJECT[obj_id] = malloc(sizeof(HGP_OBJECT));
-            HGP_THIS_OBJECT[obj_id]->pointer = malloc(sizeof(HGP_CIRCLE));
-            HGP_THIS_OBJECT[obj_id]->type = HGP_OBJECT_CIRCLE_FLAG;
-            HGP_CIRCLE *obj_pointer = HGP_THIS_OBJECT[obj_id]->pointer;
-            obj_pointer->window_info.window_id = window;
-            obj_pointer->window_info.layer_id = layer;
-            obj_pointer->window_info.object_pointer_id = obj_id;
-            HGP_THIS_OBJECT[obj_id]->window_info = obj_pointer->window_info;
-            return obj_pointer;
-        }
-        case HGP_OBJECT_ARC_FLAG:
-        {
-            HGP_THIS_OBJECT[obj_id] = malloc(sizeof(HGP_OBJECT));
-            HGP_THIS_OBJECT[obj_id]->pointer = malloc(sizeof(HGP_ARC));
-            HGP_THIS_OBJECT[obj_id]->type = HGP_OBJECT_ARC_FLAG;
-            HGP_ARC *obj_pointer = HGP_THIS_OBJECT[obj_id]->pointer;
-            obj_pointer->window_info.window_id = window;
-            obj_pointer->window_info.layer_id = layer;
-            obj_pointer->window_info.object_pointer_id = obj_id;
-            HGP_THIS_OBJECT[obj_id]->window_info = obj_pointer->window_info;
-            return obj_pointer;
-        }
-        case HGP_OBJECT_FAN_FLAG:
-        {
-            HGP_THIS_OBJECT[obj_id] = malloc(sizeof(HGP_OBJECT));
-            HGP_THIS_OBJECT[obj_id]->pointer = malloc(sizeof(HGP_FAN));
-            HGP_THIS_OBJECT[obj_id]->type = HGP_OBJECT_FAN_FLAG;
-            HGP_FAN *obj_pointer = HGP_THIS_OBJECT[obj_id]->pointer;
-            obj_pointer->window_info.window_id = window;
-            obj_pointer->window_info.layer_id = layer;
-            obj_pointer->window_info.object_pointer_id = obj_id;
-            HGP_THIS_OBJECT[obj_id]->window_info = obj_pointer->window_info;
-            return obj_pointer;
-        }
-        case HGP_OBJECT_LINE_FLAG:
-        {
-            HGP_THIS_OBJECT[obj_id] = malloc(sizeof(HGP_OBJECT));
-            HGP_THIS_OBJECT[obj_id]->pointer = malloc(sizeof(HGP_LINE));
-            HGP_THIS_OBJECT[obj_id]->type = HGP_OBJECT_LINE_FLAG;
-            HGP_LINE *obj_pointer = HGP_THIS_OBJECT[obj_id]->pointer;
-            obj_pointer->window_info.window_id = window;
-            obj_pointer->window_info.layer_id = layer;
-            obj_pointer->window_info.object_pointer_id = obj_id;
-            HGP_THIS_OBJECT[obj_id]->window_info = obj_pointer->window_info;
-            return obj_pointer;
-        }
-        case HGP_OBJECT_POLYGON_FLAG:
-        {
-            HGP_THIS_OBJECT[obj_id] = malloc(sizeof(HGP_OBJECT));
-            HGP_THIS_OBJECT[obj_id]->pointer = malloc(sizeof(HGP_POLYGON));
-            HGP_THIS_OBJECT[obj_id]->type = HGP_OBJECT_POLYGON_FLAG;
-            HGP_POLYGON *obj_pointer = HGP_THIS_OBJECT[obj_id]->pointer;
-            obj_pointer->window_info.window_id = window;
-            obj_pointer->window_info.layer_id = layer;
-            obj_pointer->window_info.object_pointer_id = obj_id;
-            HGP_THIS_OBJECT[obj_id]->window_info = obj_pointer->window_info;
-            return obj_pointer;
-        }
-        default:
-            return NULL;
-        }
-    }
-    return NULL;
 }
-
 int hgp_delete_object(HGP_OBJECT_WINDOW_INFO obj_info) //TODO:obj
 {
     int window = obj_info.window_id;
