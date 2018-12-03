@@ -1,12 +1,12 @@
 #include "handyplus.h"
 //#include "handy.h"
-#define HGP_THIS_WINDOW HGP_WINDOW_CONTAINER[window]
-#define HGP_THIS_LAYER HGP_WINDOW_CONTAINER[window]->Layer[layer]
-#define HGP_THIS_OBJECT HGP_WINDOW_CONTAINER[window]->Layer[layer]->Object
-#define breakp breakpoint();
+// #define HGP_THIS_WINDOW HGP_WINDOW_CONTAINER[window]
+// #define HGP_THIS_LAYER HGP_WINDOW_CONTAINER[window]->Layer[layer]
+// #define HGP_THIS_OBJECT HGP_WINDOW_CONTAINER[window]->Layer[layer]->Object
+// #define breakp breakpoint();
 
 
-int hgp_window_init(double x, double y)
+HGP_WINDOW_INFO* hgp_window_init(double x, double y, double window_location_x, double window_location_y)
 {
     hgp_layer_flag_1.layer_reverse_flag = 0;
     hgp_layer_flag_1.nextnode = &hgp_layer_flag_2;
@@ -15,48 +15,52 @@ int hgp_window_init(double x, double y)
     hgp_layer_flag_3.layer_reverse_flag = 2;
     hgp_layer_flag_3.nextnode = &hgp_layer_flag_1;
     HGP_LAYER_FLAG_CURRENT_PTR = &hgp_layer_flag_1;
-    for (int i = 0; i < HG_MAX_WINDOWS; i++)
-    {
-        HGP_WINDOW_CONTAINER[i] = NULL;
-    }
-    int wid = hgp_create_window(x, y);
-    if (wid == -1)
-    {
-        printf("window init failed\n");
-    }
-    // memset()
-    return wid;
+
+    return hgp_create_window(x, y,window_location_x,window_location_y);
 }
 
-int hgp_create_window(double x, double y)
+HGP_WINDOW_INFO *hgp_create_window(double x, double y, double window_location_x, double window_location_y)
 {
-    int window = -1;
-    for (int i = 0; i < HG_MAX_WINDOWS; i++)
+    HGP_WINDOW_INFO *new_window_ptr = malloc(sizeof(HGP_WINDOW_INFO));
+    if (HGP_WINDOW_ENTER_NODE != NULL)
     {
-        if (HGP_WINDOW_CONTAINER[i] == NULL)
+        HGP_WINDOW_INFO *window_tmp_ptr = HGP_WINDOW_ENTER_NODE;
+        for (int i = 0; i < HG_MAX_WINDOWS; i++)
         {
-            window = i;
-            break;
+            if (window_tmp_ptr->next_window_node == NULL)
+            {
+                break;
+            }
+            else
+            {
+                window_tmp_ptr = window_tmp_ptr->next_window_node;
+            }
         }
+        new_window_ptr->previos_window_node = window_tmp_ptr;
+        window_tmp_ptr->next_window_node = new_window_ptr;
+        new_window_ptr->next_window_node = NULL;
     }
-    breakp;
-    if (window != -1)
+    else
     {
-        HGP_THIS_WINDOW = ((HGP_WINDOW_INFO *)malloc(sizeof(HGP_WINDOW_INFO)));
-        HGP_THIS_WINDOW->wid = HgOpen(x, y);
-        HGP_THIS_WINDOW->window_x = x;
-        HGP_THIS_WINDOW->window_y = y;
-        for (int i = 0; i < HG_MAX_LAYERS; i++)
-        {
-            HGP_THIS_WINDOW->Layer[i] = NULL;
-        }
-        hgp_add_layer(window);
+        new_window_ptr->previos_window_node = NULL;
+        new_window_ptr->next_window_node = NULL;
+        HGP_WINDOW_ENTER_NODE=new_window_ptr;
     }
-    breakp;
-    return window;
+    if (window_location_x == -1 || window_location_y == -1)
+    {
+        new_window_ptr->wid = HgOpen(x, y);
+    }
+    else
+    {
+        new_window_ptr->wid = HgWOpen(x, y, window_location_x, window_location_y);
+    }
+    new_window_ptr->window_x = x;
+    new_window_ptr->window_y = y;
+    new_window_ptr->start_layer_node; //=hgp_add_layer();
+    return new_window_ptr;
 }
 
-int hgp_add_layer(int window)
+HGP_LAYER_INFO* hgp_add_layer(HGP_WINDOW_INFO* window)
 {
     int layer = -1;
     for (int i = 0; i < HG_MAX_LAYERS; i++)
@@ -81,6 +85,40 @@ int hgp_add_layer(int window)
         }
     }
     return layer;
+
+    HGP_LAYER_INFO* new_layer_ptr=malloc(sizeof(HGP_LAYER_INFO));
+    if(window->start_layer_node==NULL)
+    {
+        window->start_layer_node=new_layer_ptr;
+        new_layer_ptr->previous_layer_node=window;
+        new_layer_ptr->next_layer_node=window;
+        new_layer_ptr->node_info=HGP_LAYER_NODE_INFO_START;
+    }
+    else
+    {
+        HGP_LAYER_INFO *tmp_layer_ptr=window->start_layer_node;
+        for(int i=0;i<HG_MAX_LAYERS;i++)
+        {
+            if(tmp_layer_ptr->next_layer_node==window)
+            {
+                if(tmp_layer_ptr->node_info==HGP_LAYER_NODE_INFO_END)
+                {
+                    tmp_layer_ptr->node_info=HGP_LAYER_NODE_INFO_NORMAL;
+                }
+                break;                
+            }
+        }
+        tmp_layer_ptr->next_layer_node=new_layer_ptr;
+        new_layer_ptr->previous_layer_node=tmp_layer_ptr;
+        new_layer_ptr->next_layer_node=window;
+        new_layer_ptr->node_info=HGP_LAYER_NODE_INFO_END;
+        new_layer_ptr->obj_start_node=NULL;
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        new_layer_ptr->lid[i]=HgWAddLayer(window->wid);
+    }
+
 }
 
 void *hgp_add_object(int obj_type_flag, int window, int layer) //TODO:add obj

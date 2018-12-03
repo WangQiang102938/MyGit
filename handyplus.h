@@ -103,12 +103,6 @@ typedef struct HGP_POLYGON{
     unsigned int fill_color; 
 }HGP_POLYGON;
 
-typedef struct HGP_OBJECT{
-    int type;
-    void *pointer;
-    HGP_OBJECT_WINDOW_INFO window_info;
-}HGP_OBJECT;
-
 //-----Globle-----//
 void breakpoint();
 int breakpointcount;
@@ -131,27 +125,49 @@ int hgp_single_draw(HGP_OBJECT_WINDOW_INFO window_info);
 int hgp_direct_draw(HGP_OBJECT_WINDOW_INFO window_info);
 int hgp_erase_object(HGP_OBJECT_WINDOW_INFO window_info,unsigned long BackGroundColor);
 //-----Window-----//
+#define HGP_LAYER_NODE_INFO_START 1
+#define HGP_LAYER_NODE_INFO_END -1
+#define HGP_LAYER_NODE_INFO_NORMAL 0
+
+#define HGP_OBJECT_NODE_INFO_START 1
+#define HGP_OBJECT_NODE_INFO_END -1
+#define HGP_OBJECT_NODE_INFO_NORMAL 0
+
+typedef struct HGP_OBJECT{
+    int type;
+    void *pointer;
+    HGP_OBJECT_WINDOW_INFO window_info;
+    struct HGP_OBJECT * next_object_node;
+    struct HGP_OBJECT * previous_object_node;
+    int node_info;
+}HGP_OBJECT;
 
 typedef struct HGP_LAYER_INFO
 {
     int lid[3];
     unsigned long BackGroundColor;
-    HGP_OBJECT *Object[HGP_OBJECT_TOTAL_NUM];
+    HGP_OBJECT * obj_start_node;
+    struct HGP_LAYER_INFO * next_layer_node;
+    struct HGP_LAYER_INFO * previous_layer_node;
+    int node_info;
 } HGP_LAYER_INFO;
 
 typedef struct HGP_WINDOW_INFO
 {
     int wid;
-    HGP_LAYER_INFO *Layer[HG_MAX_LAYERS];
     double window_x;
     double window_y;
+    struct HGP_WINDOW_INFO * next_window_node;
+    struct HGP_WINDOW_INFO * previos_window_node;
+    struct HGP_LAYER_INFO * start_layer_node;
 } HGP_WINDOW_INFO;
 
-HGP_WINDOW_INFO *HGP_WINDOW_CONTAINER[HG_MAX_WINDOWS];
+HGP_WINDOW_INFO * HGP_WINDOW_CONTAINER[HG_MAX_WINDOWS];
+HGP_WINDOW_INFO * HGP_WINDOW_ENTER_NODE;
 int HGP_WINDOW_COUNTER;
-int hgp_window_init(double x, double y);
+HGP_WINDOW_INFO* hgp_create_window(double x, double y,double window_location_x,double window_location_y);
 int hgp_create_window(double x, double y);
-int hgp_add_layer(int window);
+HGP_LAYER_INFO* hgp_add_layer(HGP_WINDOW_INFO* window)
 void *hgp_add_object(int obj_type_flag, int window, int layer);
 int hgp_delete_object(HGP_OBJECT_WINDOW_INFO obj_info);
 int hgp_delete_layer(int window, int layer);
