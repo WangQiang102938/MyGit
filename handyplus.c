@@ -1,9 +1,4 @@
 #include "handyplus.h"
-//#include "handy.h"
-// #define HGP_THIS_WINDOW HGP_WINDOW_CONTAINER[window]
-// #define HGP_THIS_LAYER HGP_WINDOW_CONTAINER[window]->Layer[layer]
-// #define HGP_THIS_OBJECT HGP_WINDOW_CONTAINER[window]->Layer[layer]->Object
-// #define breakp breakpoint();
 
 HGP_WINDOW_INFO *hgp_window_init(double x, double y, double window_location_x, double window_location_y)
 {
@@ -55,7 +50,7 @@ HGP_WINDOW_INFO *hgp_create_window(double x, double y, double window_location_x,
     }
     new_window_ptr->window_x = x;
     new_window_ptr->window_y = y;
-    new_window_ptr->start_layer_node; //=hgp_add_layer();
+    new_window_ptr->start_layer_node=hgp_add_layer(new_window_ptr);
     return new_window_ptr;
 }
 
@@ -137,6 +132,7 @@ HGP_OBJECT *hgp_add_object(HGP_LAYER_INFO *layer, int type) //TODO:add obj
         new_object_ptr->pointer = malloc(sizeof(HGP_POLYGON));
         break;
     }
+    return new_object_ptr;
 }
 int hgp_delete_object(HGP_OBJECT *obj_ptr) //TODO:obj
 {
@@ -202,9 +198,10 @@ int hgp_destroy_window(HGP_WINDOW_INFO *window_ptr)
         }
         hgp_delete_layer(tmp_layer_ptr);
     }
+    HgSleep(0.1);  
     HgWClose(window_ptr->wid);
     free(window_ptr);
-    HgSleep(0.1);
+    return 1;
 }
 
 void breakpoint()
@@ -218,24 +215,27 @@ int hgp_update(int flag) //TODO:add obj
     HGP_WINDOW_INFO *window_ptr = HGP_WINDOW_ENTER_NODE;
     HGP_LAYER_INFO *layer_ptr = NULL;
     HGP_OBJECT *object_ptr = NULL;
-    while (1)
+    while (1)//window
     {
         layer_ptr = window_ptr->start_layer_node;
-        while (1)
+        while (1)//layer
         {
             object_ptr = layer_ptr->obj_start_node;
-            while (1)
+            while (1)//object
             {
+                hgp_single_draw(object_ptr);
                 if (object_ptr->next_object_node == NULL)
                 {
                     break;
                 }
                 else
                 {
-                    hgp_single_draw(object_ptr);
                     object_ptr = object_ptr->next_object_node;
                 }
             }
+            HgLShow(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],1);
+            HgLShow(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->nextnode->layer_reverse_flag],0);
+            HgLClear(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->layer_reverse_flag]);
             if (layer_ptr->next_layer_node == NULL)
             {
                 break;
@@ -254,6 +254,7 @@ int hgp_update(int flag) //TODO:add obj
             window_ptr = window_ptr->next_window_node;
         }
     }
+    HGP_LAYER_FLAG_CURRENT_PTR=HGP_LAYER_FLAG_CURRENT_PTR->nextnode;
     return 1;
 }
 
@@ -578,7 +579,7 @@ HGP_CIRCLE *hgp_circle_init(HGP_LAYER_INFO *layer_ptr,
                             double x, double y, double r,
                             unsigned long shell_color,
                             unsigned long fill_color,
-                            int fill_flag, int stroke_lenth, HGP_OBJECT **obj_pointer)
+                            int fill_flag, int stroke_lenth)
 {
     HGP_OBJECT *obj_ptr = (hgp_add_object(layer_ptr, HGP_OBJECT_CIRCLE_FLAG));
     HGP_CIRCLE *Operate_Circle_Pointer = obj_ptr->pointer;
@@ -596,7 +597,7 @@ HGP_CIRCLE *hgp_circle_init(HGP_LAYER_INFO *layer_ptr,
 HGP_ARC *hgp_arc_init(HGP_LAYER_INFO *layer_ptr,
                       double x, double y, double r,
                       unsigned long shell_color,
-                      double arc_start, double arc_value, HGP_OBJECT **obj_pointer)
+                      double arc_start, double arc_value)
 {
     HGP_OBJECT *obj_ptr = (hgp_add_object(layer_ptr, HGP_OBJECT_ARC_FLAG));
     HGP_ARC *Operate_Arc_Pointer = obj_ptr->pointer;
@@ -615,7 +616,7 @@ HGP_FAN *hgp_fan_init(HGP_LAYER_INFO *layer_ptr,
                       unsigned long shell_color,
                       unsigned long fill_color,
                       int fill_flag, int stroke_lenth,
-                      double arc_start, double arc_value, HGP_OBJECT **obj_pointer)
+                      double arc_start, double arc_value)
 {
     HGP_OBJECT *obj_ptr = (hgp_add_object(layer_ptr, HGP_OBJECT_FAN_FLAG));
     HGP_FAN *Operate_Fan_Pointer = obj_ptr->pointer;
@@ -633,7 +634,7 @@ HGP_FAN *hgp_fan_init(HGP_LAYER_INFO *layer_ptr,
 }
 
 HGP_LINE *hgp_line_init(HGP_LAYER_INFO *layer_ptr, double start_x, double start_y, double end_x, double end_y,
-                        unsigned long color, double line_width, HGP_OBJECT **obj_pointer)
+                        unsigned long color, double line_width)
 {
     HGP_OBJECT *obj_ptr = (hgp_add_object(layer_ptr, HGP_OBJECT_LINE_FLAG));
     HGP_LINE *Operate_Obj_Pointer = obj_ptr->pointer;
