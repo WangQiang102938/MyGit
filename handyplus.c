@@ -50,7 +50,7 @@ HGP_WINDOW_INFO *hgp_create_window(double x, double y, double window_location_x,
     }
     new_window_ptr->window_x = x;
     new_window_ptr->window_y = y;
-    new_window_ptr->start_layer_node=hgp_add_layer(new_window_ptr);
+    new_window_ptr->start_layer_node=NULL;
     return new_window_ptr;
 }
 
