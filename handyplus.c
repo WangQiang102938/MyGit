@@ -50,7 +50,7 @@ HGP_WINDOW_INFO *hgp_create_window(double x, double y, double window_location_x,
     }
     new_window_ptr->window_x = x;
     new_window_ptr->window_y = y;
-    new_window_ptr->start_layer_node=NULL;
+    new_window_ptr->start_layer_node = NULL;
     return new_window_ptr;
 }
 
@@ -132,6 +132,7 @@ HGP_OBJECT *hgp_add_object(HGP_LAYER_INFO *layer, int type) //TODO:add obj
         new_object_ptr->pointer = malloc(sizeof(HGP_POLYGON));
         break;
     }
+    new_object_ptr->change_flag = -1;
     return new_object_ptr;
 }
 int hgp_delete_object(HGP_OBJECT *obj_ptr) //TODO:obj
@@ -198,7 +199,7 @@ int hgp_destroy_window(HGP_WINDOW_INFO *window_ptr)
         }
         hgp_delete_layer(tmp_layer_ptr);
     }
-    HgSleep(0.1);  
+    HgSleep(0.1);
     HgWClose(window_ptr->wid);
     free(window_ptr);
     return 1;
@@ -215,13 +216,13 @@ int hgp_update(int flag) //TODO:add obj
     HGP_WINDOW_INFO *window_ptr = HGP_WINDOW_ENTER_NODE;
     HGP_LAYER_INFO *layer_ptr = NULL;
     HGP_OBJECT *object_ptr = NULL;
-    while (1)//window
+    while (1) //window
     {
         layer_ptr = window_ptr->start_layer_node;
-        while (1)//layer
+        while (1) //layer
         {
             object_ptr = layer_ptr->obj_start_node;
-            while (1)//object
+            while (1) //object
             {
                 hgp_single_draw(object_ptr);
                 if (object_ptr->next_object_node == NULL)
@@ -233,8 +234,8 @@ int hgp_update(int flag) //TODO:add obj
                     object_ptr = object_ptr->next_object_node;
                 }
             }
-            HgLShow(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],1);
-            HgLShow(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->nextnode->layer_reverse_flag],0);
+            HgLShow(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], 1);
+            HgLShow(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->nextnode->layer_reverse_flag], 0);
             HgLClear(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->layer_reverse_flag]);
             if (layer_ptr->next_layer_node == NULL)
             {
@@ -254,91 +255,98 @@ int hgp_update(int flag) //TODO:add obj
             window_ptr = window_ptr->next_window_node;
         }
     }
-    HGP_LAYER_FLAG_CURRENT_PTR=HGP_LAYER_FLAG_CURRENT_PTR->nextnode;
+    HGP_LAYER_FLAG_CURRENT_PTR = HGP_LAYER_FLAG_CURRENT_PTR->nextnode;
     return 1;
 }
 
 int hgp_single_draw(HGP_OBJECT *object_ptr)
 {
-    switch (object_ptr->type)
+    if (object_ptr->change_flag || object_ptr->change_flag == -1)
     {
-    case HGP_OBJECT_RECT_FLAG:
-    {
-        HGP_RECT *obj_pointer = object_ptr->pointer;
-        HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
-        HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->shell_color, HG_ColorDraw);
-        HGCRectangle(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],
-                     obj_pointer->x,
-                     obj_pointer->y,
-                     obj_pointer->width / 2,
-                     obj_pointer->height / 2,
-                     obj_pointer->rotate_arc,
-                     obj_pointer->fill_flag,
-                     obj_pointer->stroke_lenth);
-        break;
-    }
-    case HGP_OBJECT_CIRCLE_FLAG:
-    {
-        HGP_CIRCLE *obj_pointer = ((HGP_CIRCLE *)object_ptr->pointer);
-        HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
-        HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->shell_color, HG_ColorDraw);
-        HGCCircle(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],
-                  obj_pointer->x,
-                  obj_pointer->y,
-                  obj_pointer->r,
-                  obj_pointer->fill_flag,
-                  obj_pointer->stroke_lenth);
-        break;
-    }
-    case HGP_OBJECT_ARC_FLAG:
-    {
-        HGP_ARC *obj_pointer = ((HGP_ARC *)object_ptr->pointer);
-        HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->shell_color, HG_ColorDraw);
-        HGCFan(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],
-               obj_pointer->x,
-               obj_pointer->y,
-               obj_pointer->r,
-               obj_pointer->arc_start,
-               obj_pointer->arc_start + obj_pointer->arc_value,
-               0, 0);
-        break;
-    }
-    case HGP_OBJECT_FAN_FLAG:
-    {
-        HGP_FAN *obj_pointer = ((HGP_FAN *)object_ptr->pointer);
-        HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->shell_color, HG_ColorDraw);
-        HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
-        HGCFan(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],
-               obj_pointer->x,
-               obj_pointer->y,
-               obj_pointer->r,
-               obj_pointer->arc_start,
-               obj_pointer->arc_start + obj_pointer->arc_value,
-               obj_pointer->fill_flag,
-               obj_pointer->stroke_lenth);
-        break;
-    }
-    case HGP_OBJECT_LINE_FLAG: //todo
-    {
-        HGP_LINE *obj_pointer = ((HGP_LINE *)object_ptr->pointer);
-        HgWSetWidth(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->line_width);
-        HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->color, HG_ColorDraw);
-        HgWLine(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->start_x,
-                obj_pointer->start_y, obj_pointer->end_x, obj_pointer->end_y);
-        break;
-    }
-    case HGP_OBJECT_POLYGON_FLAG: //todo
-    {
-        HGP_POLYGON *obj_pointer = ((HGP_POLYGON *)object_ptr->pointer);
-        HgWSetWidth(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->line_width);
-        HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->color, HG_ColorDraw);
-        HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
-        HGCPolygon(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->counter,
-                   obj_pointer->x, obj_pointer->y, obj_pointer->fill_flag, obj_pointer->stroke_lenth);
-        break;
-    }
-    default:
-        break;
+        switch (object_ptr->type)
+        {
+        case HGP_OBJECT_RECT_FLAG:
+        {
+            HGP_RECT *obj_pointer = object_ptr->pointer;
+            HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
+            HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->shell_color, HG_ColorDraw);
+            HGCRectangle(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],
+                         obj_pointer->x,
+                         obj_pointer->y,
+                         obj_pointer->width / 2,
+                         obj_pointer->height / 2,
+                         obj_pointer->rotate_arc,
+                         obj_pointer->fill_flag,
+                         obj_pointer->stroke_lenth);
+            break;
+        }
+        case HGP_OBJECT_CIRCLE_FLAG:
+        {
+            HGP_CIRCLE *obj_pointer = ((HGP_CIRCLE *)object_ptr->pointer);
+            HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
+            HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->shell_color, HG_ColorDraw);
+            HGCCircle(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],
+                      obj_pointer->x,
+                      obj_pointer->y,
+                      obj_pointer->r,
+                      obj_pointer->fill_flag,
+                      obj_pointer->stroke_lenth);
+            break;
+        }
+        case HGP_OBJECT_ARC_FLAG:
+        {
+            HGP_ARC *obj_pointer = ((HGP_ARC *)object_ptr->pointer);
+            HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->shell_color, HG_ColorDraw);
+            HGCFan(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],
+                   obj_pointer->x,
+                   obj_pointer->y,
+                   obj_pointer->r,
+                   obj_pointer->arc_start,
+                   obj_pointer->arc_start + obj_pointer->arc_value,
+                   0, 0);
+            break;
+        }
+        case HGP_OBJECT_FAN_FLAG:
+        {
+            HGP_FAN *obj_pointer = ((HGP_FAN *)object_ptr->pointer);
+            HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->shell_color, HG_ColorDraw);
+            HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
+            HGCFan(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],
+                   obj_pointer->x,
+                   obj_pointer->y,
+                   obj_pointer->r,
+                   obj_pointer->arc_start,
+                   obj_pointer->arc_start + obj_pointer->arc_value,
+                   obj_pointer->fill_flag,
+                   obj_pointer->stroke_lenth);
+            break;
+        }
+        case HGP_OBJECT_LINE_FLAG: //todo
+        {
+            HGP_LINE *obj_pointer = ((HGP_LINE *)object_ptr->pointer);
+            HgWSetWidth(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->line_width);
+            HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->color, HG_ColorDraw);
+            HgWLine(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->start_x,
+                    obj_pointer->start_y, obj_pointer->end_x, obj_pointer->end_y);
+            break;
+        }
+        case HGP_OBJECT_POLYGON_FLAG: //todo
+        {
+            HGP_POLYGON *obj_pointer = ((HGP_POLYGON *)object_ptr->pointer);
+            HgWSetWidth(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->line_width);
+            HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->color, HG_ColorDraw);
+            HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
+            HGCPolygon(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->counter,
+                       obj_pointer->x, obj_pointer->y, obj_pointer->fill_flag, obj_pointer->stroke_lenth);
+            break;
+        }
+        default:
+            break;
+        }
+        if (object_ptr->change_flag==1)
+        {
+            object_ptr->change_flag = 0;
+        }
     }
     return 1;
 }
@@ -354,7 +362,7 @@ int hgp_direct_draw(HGP_OBJECT *object_ptr)
 int hgp_quit() //disabled hgp_killHG
 {
     HGP_WINDOW_INFO *window_ptr = HGP_WINDOW_ENTER_NODE;
-    while (window_ptr->next_window_node == NULL)
+    while (window_ptr->next_window_node != NULL)
     {
         window_ptr = window_ptr->next_window_node;
         hgp_destroy_window(window_ptr->previos_window_node);
@@ -425,6 +433,10 @@ int hgp_object_move(HGP_OBJECT *object_ptr, double direct_arc, double distance) 
     }
     }
     //hgp_update();
+    if (object_ptr->change_flag == 0)
+    {
+        object_ptr->change_flag = 1;
+    }
     return 0;
 }
 
@@ -499,6 +511,11 @@ int hgp_object_zoom(HGP_OBJECT *object_ptr, double zoom_rate, double zoom_center
         }
     }
     }
+    if (object_ptr->change_flag == 0)
+    {
+        object_ptr->change_flag = 1;
+    }
+
     return 0;
 }
 
@@ -551,6 +568,11 @@ int hgp_object_rotate(HGP_OBJECT *object_ptr, double rotate_arc, int need_angle_
         obj_pointer->start_x = new_cos * lenth / 2;
     }
     }
+    if (object_ptr->change_flag == 0)
+    {
+        object_ptr->change_flag = 1;
+    }
+
     return 0;
 }
 

@@ -50,6 +50,7 @@ typedef struct HGP_OBJECT
     struct HGP_OBJECT *next_object_node;
     struct HGP_OBJECT *previous_object_node;
     struct HGP_LAYER_INFO *father_layer_info;
+    int change_flag;//-1:disable;0:normal;1:changed
 } HGP_OBJECT;
 
 
