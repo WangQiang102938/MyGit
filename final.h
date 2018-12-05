@@ -10,20 +10,21 @@
 
 typedef struct world_rect{
     HGP_RECT* this_rect;
+    //2-dimention linklist
     struct world_rect * left;
     struct world_rect * right;
     struct world_rect * up;
     struct world_rect * down;
+    //snake chain
     struct world_rect * snake_node;
+    //food flag
     int food;
 }world_rect;
 
 world_rect *world_array[50][50]={NULL};
-world_rect *snake_head_ptr;
+world_rect *snake_head_ptr;//snake head
 
 int snake_direct;
-int snake_head_x;
-int snake_head_y;
 
 int food_x;
 int food_y;

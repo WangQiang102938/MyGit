@@ -4,6 +4,7 @@
 #include <handy.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h>
 #include <pthread/pthread.h>
 
 #define INIT_DEFAULT 0

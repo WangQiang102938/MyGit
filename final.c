@@ -12,55 +12,89 @@ int main()
     //--world-init/
     //create 2-dimention circle linklist
     //array use to create linklist
+
+    for (int i = 0; i < 50; i++)
     {
-        for (int i = 0; i < 50; i++)
+        for (int j = 0; j < 50; j++)
         {
-            for (int j = 0; j < 50; j++)
+            world_array[j][i] = malloc(sizeof(world_rect));
+            world_array[j][i]->this_rect = hgp_rect_init(layer1, j * 10 + 5, i * 10 + 5, 10, 10, HG_WHITE, HG_WHITE, 1, 0, 0);
+            world_array[j][i]->this_rect->obj_ptr->change_flag = 1;//dirty zone
+            world_array[j][i]->left = NULL;
+            world_array[j][i]->right = NULL;
+            world_array[j][i]->up = NULL;
+            world_array[j][i]->down = NULL;
+            world_array[j][i]->snake_node = NULL;
+            world_array[j][i]->food = 0;
+            if (j > 0)
             {
-                world_array[j][i] = malloc(sizeof(world_rect));
-                world_array[j][i]->this_rect = hgp_rect_init(layer1, j * 10 + 5, i * 10 + 5, 10, 10, HG_WHITE, HG_WHITE, 1, 0, 0);
-                world_array[j][i]->this_rect->obj_ptr->change_flag = 1;
-                world_array[j][i]->left = NULL;
-                world_array[j][i]->right = NULL;
-                world_array[j][i]->up = NULL;
-                world_array[j][i]->down = NULL;
-                world_array[j][i]->snake_node = NULL;
-                world_array[j][i]->food = 0;
-                if (j > 0)
-                {
-                    world_array[j][i]->left = world_array[j - 1][i];
-                    world_array[j][i]->left->right = world_array[j][i];
-                    if (i > 0)
-                    {
-                        world_array[j][i]->down = world_array[j][i - 1];
-                        world_array[j][i]->down->up = world_array[j][i];
-                    }
-                }
+                world_array[j][i]->left = world_array[j - 1][i];
+                world_array[j][i]->left->right = world_array[j][i];
             }
-            world_array[0][i]->left = world_array[49][i];
-            world_array[0][i]->left->right = world_array[0][i];
+            if (i > 0)
+            {
+                world_array[j][i]->down = world_array[j][i - 1];
+                world_array[j][i]->down->up = world_array[j][i];
+            }
         }
-        for (int i = 0; i < 50; i++)
+        world_array[0][i]->left = world_array[49][i];
+        world_array[0][i]->left->right = world_array[0][i];
+    }
+    for (int i = 0; i < 50; i++)
+    {
+        world_array[i][49]->up = world_array[i][0];
+        world_array[i][49]->up->down = world_array[i][49];
+    }
+    //check NULLPTR,will cause undetected errors;
+    for (int i = 0; i < 50; i++)
+    {
+        for (int j = 0; j < 50; j++)
         {
-            world_array[i][49]->up = world_array[i][0];
-            world_array[i][49]->up->down = world_array[i][49];
+            int flag = 0;
+            if (world_array[j][i] == NULL)
+                flag = 1;
+            if (world_array[j][i]->down == NULL)
+                flag = 2;
+            if (world_array[j][i]->up == NULL)
+                flag = 3;
+            if (world_array[j][i]->left == NULL)
+                flag = 4;
+            if (world_array[j][i]->right == NULL)
+                flag = 5;
+            if (flag != 0)
+            {
+                printf("NULLPTR:x=%d,y=%d,type=%d\n", j, i, flag);
+            }
         }
     }
+
     //world-init complete
 
     //set head and first food generate
-    {
-        snake_head_x = rand() % 25 + 25;
-        snake_head_y = rand() % 25 + 25;
-        snake_direct = snake_down;
-        snake_head_ptr = world_array[snake_head_x][snake_head_y];
-        snake_head_ptr->snake_node = snake_head_ptr->up; //add a tail
-        food_generate();
-        int foodflag = 0;
-    }
+
+    snake_direct = snake_down;
+    snake_head_ptr = world_array[rand() % 25 + 25][rand() % 25 + 25];
+    snake_head_ptr->snake_node = snake_head_ptr->up; //add a tail
+    food_generate();
+    int foodflag = 0;
+
+    int timer = 1000 * 250;//maybe fastest
+    struct timeval current_time;
+    struct timeval prev_time;
+    gettimeofday(&prev_time, NULL);
     //main circle
+
+    while (breakflag)
     {
-        while (breakflag)
+        if (snake_head_ptr == NULL)
+        {
+            printf("be fucked\n");
+            getchar();
+            getchar();
+        }
+        gettimeofday(&current_time, NULL);
+        if (current_time.tv_sec * 1000000 + current_time.tv_usec <
+            prev_time.tv_sec * 1000000 + prev_time.tv_usec + timer)
         {
             event = HgEventNonBlocking();
             //W A S D control
@@ -92,6 +126,9 @@ int main()
                     }
                 }
             }
+        }
+        else
+        {
             if (snake_move() == NULL)
             {
                 printf("You Lose\n");
@@ -104,18 +141,20 @@ int main()
                 snake_update();
             }
             hgp_update(1);
-            HgSleep(0.2); //TODO:increase speed or make timer
-        JUMPUPDATE:
-        {
+            //HgSleep(0.2); //TODO:will block,
+            prev_time = current_time;
         }
-        }
+    JUMPUPDATE:
+    {
     }
+    }
+
     hgp_quit();
 }
 
 void food_generate()
 {
-    for (int i = 0; i < foodtotal; i++)
+    for (int i = 0; i < foodtotal-foodcount; i++)
     {
         do
         {
@@ -173,7 +212,7 @@ void *snake_move()
     {
         snake_head_ptr->food = 0;
         foodcount--;
-        if (foodcount == 0)
+        if (foodcount == 5)//low food limit
             food_generate();
     }
     return snake_head_ptr;
