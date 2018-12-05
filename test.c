@@ -18,7 +18,7 @@ int main()
         hgp_object_move(circle1->obj_ptr, HGP_DIRECT_DOWN, 1);
         hgp_object_move(arc1->obj_ptr, HGP_DIRECT_LEFT, 1);
         hgp_update(1);
-        HgSleep(0.01);
+        HgSleep(0.03);
     }
     hgp_delete_object(rect1->obj_ptr);
     update
