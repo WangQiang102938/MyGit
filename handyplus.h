@@ -117,19 +117,32 @@ typedef struct HGP_LINE
     double line_width;
 } HGP_LINE;
 
+typedef struct HGP_POLYGON_NODE
+{
+    double x;
+    double y;
+    struct HGP_POLYGON_NODE *next_node;
+    struct HGP_POLYGON_NODE *prev_node;
+    HGP_POLYGON* polygon_ptr;
+}HGP_POLYGON_NODE;
+
 typedef struct HGP_POLYGON
 {
     HGP_OBJECT *obj_ptr;
     int counter;
-    double x[1024];
-    double y[1024];
+    HGP_POLYGON_NODE *head;
     double line_width;
     unsigned long color;
     int fill_flag;
     double stroke_lenth;
     unsigned int fill_color;
 } HGP_POLYGON;
-
+HGP_POLYGON_NODE * hgp_polygon_add_point(int insert_flag,HGP_POLYGON_NODE * target_node,HGP_POLYGON *polygon_ptr,double x,double y);
+HGP_POLYGON_NODE * hgp_polygon_del_point(HGP_POLYGON_NODE * target_node);
+#define HGP_POLYGON_INSERT_HEAD 0
+#define HGP_POLYGON_INSERT_TAIL 1
+#define HGP_POLYGON_INSERT_FRONT_TAR 2
+#define HGP_POLYGON_INSERT_AFTER_TAR 3
 //-----Globle-----//
 void breakpoint();
 int breakpointcount;
@@ -160,9 +173,9 @@ HGP_WINDOW_INFO *hgp_window_init(double x, double y, double window_location_x, d
 HGP_WINDOW_INFO *hgp_create_window(double x, double y, double window_location_x, double window_location_y);
 HGP_LAYER_INFO *hgp_add_layer(HGP_WINDOW_INFO *window);
 HGP_OBJECT *hgp_add_object(HGP_LAYER_INFO *layer, int type);
-int hgp_delete_object(HGP_OBJECT *obj_ptr);
-int hgp_delete_layer(HGP_LAYER_INFO *layer_ptr);
-int hgp_destroy_window(HGP_WINDOW_INFO *window_ptr);
+HGP_OBJECT * hgp_delete_object(HGP_OBJECT *obj_ptr);
+HGP_LAYER_INFO * hgp_delete_layer(HGP_LAYER_INFO *layer_ptr);
+HGP_WINDOW_INFO * hgp_destroy_window(HGP_WINDOW_INFO *window_ptr);
 void breakpoint();
 int hgp_update(int flag);
 int hgp_single_draw(HGP_OBJECT *object_ptr);

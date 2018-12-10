@@ -135,74 +135,195 @@ HGP_OBJECT *hgp_add_object(HGP_LAYER_INFO *layer, int type) //TODO:add obj
     new_object_ptr->change_flag = -1;
     return new_object_ptr;
 }
-int hgp_delete_object(HGP_OBJECT *obj_ptr) //TODO:obj
+
+HGP_POLYGON_NODE *hgp_polygon_add_point(int insert_flag, HGP_POLYGON_NODE *target_node, HGP_POLYGON *polygon_ptr, double x, double y)
 {
-    if (obj_ptr->previous_object_node == NULL)
+    if (polygon_ptr->head == NULL)
     {
-        obj_ptr->father_layer_info->obj_start_node = obj_ptr->next_object_node;
+        polygon_ptr->head = malloc(sizeof(HGP_POLYGON_NODE));
+        polygon_ptr->head->next_node = NULL;
+        polygon_ptr->head->polygon_ptr = polygon_ptr;
+        polygon_ptr->head->prev_node = NULL;
+        polygon_ptr->head->x = x;
+        polygon_ptr->head->y = y;
     }
     else
     {
+        HGP_POLYGON_NODE *new_node = malloc(sizeof(HGP_POLYGON_NODE));
+        new_node->x = x;
+        new_node->y = y;
+        new_node->polygon_ptr = polygon_ptr;
+    AGAIN:
+        switch (insert_flag)
+        {
+        case HGP_POLYGON_INSERT_HEAD:
+        {
+            new_node->next_node = polygon_ptr->head;
+            polygon_ptr->head = new_node;
+            new_node->prev_node = NULL;
+            break;
+        }
+        case HGP_POLYGON_INSERT_TAIL:
+        {
+            HGP_POLYGON_NODE *tmp_node = polygon_ptr->head;
+            while (1)
+            {
+                if (tmp_node->next_node == NULL)
+                {
+                    break;
+                }
+                else
+                {
+                    tmp_node = tmp_node->next_node;
+                }
+            }
+            tmp_node->next_node = new_node;
+            new_node->prev_node = tmp_node;
+            new_node->next_node = NULL;
+            break;
+        }
+        case HGP_POLYGON_INSERT_FRONT_TAR:
+        {
+            if (target_node->prev_node == NULL)
+            {
+                insert_flag = HGP_POLYGON_INSERT_HEAD;
+                goto AGAIN;
+            }
+            else
+            {
+                new_node->prev_node = target_node->prev_node;
+                target_node->prev_node->next_node = new_node;
+                new_node->next_node = target_node;
+                target_node->prev_node = new_node;
+            }
+            break;
+        }
+        case HGP_POLYGON_INSERT_AFTER_TAR:
+        {
+            if (target_node->next_node == NULL)
+            {
+                target_node->next_node = new_node;
+                new_node->prev_node = target_node;
+                new_node->next_node = NULL;
+            }
+            else
+            {
+                new_node->next_node = target_node->next_node;
+                target_node->next_node->prev_node = new_node;
+                target_node->next_node = new_node;
+                new_node->prev_node = target_node;
+            }
+        }
+        }
+    }
+    polygon_ptr->head->x = x;
+    polygon_ptr->head->y = y;
+}
+
+HGP_POLYGON_NODE *hgp_polygon_del_point(HGP_POLYGON_NODE *target_node) //return prev_node,if head return new head
+{
+    HGP_POLYGON_NODE *tmp_node = NULL;
+    if (target_node->next_node != NULL)
+    {
+        target_node->next_node->prev_node = target_node->prev_node;
+        tmp_node = target_node->next_node;
+    }
+    if (target_node->prev_node != NULL)
+    {
+        target_node->prev_node->next_node = target_node->next_node;
+        tmp_node = target_node->prev_node;
+    }
+    else
+    {
+        target_node->polygon_ptr->head = target_node->next_node;
+        tmp_node = target_node->next_node;
+    }
+    free(target_node);
+    return tmp_node;
+}
+
+HGP_OBJECT *hgp_delete_object(HGP_OBJECT *obj_ptr) //return prev_node,if head return new head
+{
+    HGP_OBJECT *tmp_node = NULL;
+    if (obj_ptr->next_object_node != NULL)
+    {
+        obj_ptr->next_object_node->previous_object_node = obj_ptr->previous_object_node;
+        tmp_node = obj_ptr->next_object_node;
+    }
+    if (obj_ptr->previous_object_node != NULL)
+    {
         obj_ptr->previous_object_node->next_object_node = obj_ptr->next_object_node;
+        tmp_node = obj_ptr->previous_object_node;
+    }
+    else
+    {
+        obj_ptr->father_layer_info->obj_start_node = obj_ptr->next_object_node;
+        tmp_node = obj_ptr->next_object_node;
+    }
+    if (obj_ptr->type = HGP_OBJECT_POLYGON_FLAG)
+    {
+        HGP_POLYGON *tmp_ptr = obj_ptr->pointer;
+        while (hgp_polygon_del_point(tmp_ptr->head))
+            ;
     }
     free(obj_ptr->pointer);
     free(obj_ptr);
-    obj_ptr = NULL;
-    return 1;
+    return tmp_node;
 }
 
-int hgp_delete_layer(HGP_LAYER_INFO *layer_ptr)
+HGP_LAYER_INFO *hgp_delete_layer(HGP_LAYER_INFO *layer_ptr) //return prev_node,if head return new head
 {
-    if (layer_ptr->previous_layer_node == NULL)
+    HGP_LAYER_INFO *tmp_node = NULL;
+    if (layer_ptr->next_layer_node != NULL)
     {
-        layer_ptr->father_window_info->start_layer_node = layer_ptr->next_layer_node;
+        layer_ptr->next_layer_node->previous_layer_node = layer_ptr->previous_layer_node;
+        tmp_node = layer_ptr->next_layer_node;
+    }
+    if (layer_ptr->previous_layer_node != NULL)
+    {
+        layer_ptr->previous_layer_node->next_layer_node = layer_ptr->next_layer_node;
+        tmp_node = layer_ptr->previous_layer_node;
     }
     else
     {
-        layer_ptr->previous_layer_node->next_layer_node = layer_ptr->next_layer_node;
+        layer_ptr->father_window_info->start_layer_node = layer_ptr->next_layer_node;
+        tmp_node = layer_ptr->next_layer_node;
     }
     HGP_OBJECT *tmp_obj_ptr = layer_ptr->obj_start_node;
-    if (tmp_obj_ptr != NULL)
-    {
-        while (tmp_obj_ptr->next_object_node != NULL)
-        {
-            tmp_obj_ptr = tmp_obj_ptr->next_object_node;
-            hgp_delete_object(tmp_obj_ptr->previous_object_node);
-        }
-        hgp_delete_object(tmp_obj_ptr);
-    }
+    while (hgp_delete_object(layer_ptr->obj_start_node))
+        ;
     for (int i = 0; i < 3; i++)
     {
         HgLRemove(layer_ptr->lid[i]);
     }
     free(layer_ptr);
-    return 1;
+    return tmp_node;
 }
 
-int hgp_destroy_window(HGP_WINDOW_INFO *window_ptr)
+HGP_WINDOW_INFO *hgp_destroy_window(HGP_WINDOW_INFO *window_ptr) //return prev_node,if head return new head
 {
+    HGP_WINDOW_INFO *tmp_node = NULL;
     if (window_ptr->previos_window_node == NULL)
     {
         HGP_WINDOW_ENTER_NODE = window_ptr->next_window_node;
+        tmp_node = window_ptr->next_window_node;
     }
     else
     {
         window_ptr->previos_window_node->next_window_node = window_ptr->next_window_node;
+        tmp_node = window_ptr->previos_window_node;
+    }
+    if (window_ptr->next_window_node != NULL)
+    {
+        window_ptr->next_window_node->previos_window_node = window_ptr->previos_window_node;
     }
     HGP_LAYER_INFO *tmp_layer_ptr = window_ptr->start_layer_node;
-    if (tmp_layer_ptr != NULL)
-    {
-        while (tmp_layer_ptr->next_layer_node != NULL)
-        {
-            tmp_layer_ptr = tmp_layer_ptr->next_layer_node;
-            hgp_delete_layer(tmp_layer_ptr->previous_layer_node);
-        }
-        hgp_delete_layer(tmp_layer_ptr);
-    }
+    while (hgp_delete_layer(window_ptr->start_layer_node))
+        ;
     HgSleep(0.1);
     HgWClose(window_ptr->wid);
     free(window_ptr);
-    return 1;
+    return tmp_node;
 }
 
 void breakpoint()
@@ -343,7 +464,7 @@ int hgp_single_draw(HGP_OBJECT *object_ptr)
         default:
             break;
         }
-        if (object_ptr->change_flag==1)
+        if (object_ptr->change_flag == 1)
         {
             object_ptr->change_flag = 0;
         }
