@@ -123,7 +123,7 @@ typedef struct HGP_POLYGON_NODE
     double y;
     struct HGP_POLYGON_NODE *next_node;
     struct HGP_POLYGON_NODE *prev_node;
-    HGP_POLYGON* polygon_ptr;
+    struct HGP_POLYGON* polygon_ptr;
 }HGP_POLYGON_NODE;
 
 typedef struct HGP_POLYGON
@@ -133,7 +133,6 @@ typedef struct HGP_POLYGON
     HGP_POLYGON_NODE *head;
     double line_width;
     unsigned long color;
-    int fill_flag;
     double stroke_lenth;
     unsigned int fill_color;
 } HGP_POLYGON;
@@ -211,6 +210,7 @@ HGP_FAN *hgp_fan_init(HGP_LAYER_INFO *layer_ptr,
 
 HGP_LINE *hgp_line_init(HGP_LAYER_INFO *layer_ptr, double start_x, double start_y, double end_x, double end_y,
                         unsigned long color, double line_width);
+
 //-----Object Operation-----//
 int hgp_object_move(HGP_OBJECT *obj_ptr, double direct_angle, double distance);
 int hgp_object_rotate(HGP_OBJECT *obj_ptr, double rotate_arc, int need_angle_input_1);
