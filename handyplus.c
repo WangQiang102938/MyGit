@@ -146,6 +146,8 @@ HGP_POLYGON_NODE *hgp_polygon_add_point(int insert_flag, HGP_POLYGON_NODE *targe
         polygon_ptr->head->prev_node = NULL;
         polygon_ptr->head->x = x;
         polygon_ptr->head->y = y;
+        polygon_ptr->counter = 1;
+        return polygon_ptr->head;
     }
     else
     {
@@ -215,9 +217,9 @@ HGP_POLYGON_NODE *hgp_polygon_add_point(int insert_flag, HGP_POLYGON_NODE *targe
             }
         }
         }
+        polygon_ptr->counter++;
+        return new_node;
     }
-    polygon_ptr->head->x = x;
-    polygon_ptr->head->y = y;
 }
 
 HGP_POLYGON_NODE *hgp_polygon_del_point(HGP_POLYGON_NODE *target_node) //return prev_node,if head return new head
@@ -238,6 +240,7 @@ HGP_POLYGON_NODE *hgp_polygon_del_point(HGP_POLYGON_NODE *target_node) //return 
         target_node->polygon_ptr->head = target_node->next_node;
         tmp_node = target_node->next_node;
     }
+    target_node->polygon_ptr->counter--;
     free(target_node);
     return tmp_node;
 }
@@ -260,7 +263,7 @@ HGP_OBJECT *hgp_delete_object(HGP_OBJECT *obj_ptr) //return prev_node,if head re
         obj_ptr->father_layer_info->obj_start_node = obj_ptr->next_object_node;
         tmp_node = obj_ptr->next_object_node;
     }
-    if (obj_ptr->type = HGP_OBJECT_POLYGON_FLAG)
+    if (obj_ptr->type == HGP_OBJECT_POLYGON_FLAG)
     {
         HGP_POLYGON *tmp_ptr = obj_ptr->pointer;
         while (hgp_polygon_del_point(tmp_ptr->head))
@@ -457,8 +460,21 @@ int hgp_single_draw(HGP_OBJECT *object_ptr)
             HgWSetWidth(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->line_width);
             HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->color, HG_ColorDraw);
             HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
-            HGCPolygon(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->counter,
-                       obj_pointer->x, obj_pointer->y, obj_pointer->fill_flag, obj_pointer->stroke_lenth);
+            int counter = obj_pointer->counter;
+            HGP_POLYGON_NODE *tmp_node = obj_pointer->head;
+            if (counter != 0)
+            {
+                double cache_x[counter];
+                double cache_y[counter];
+                for (int i = 0; i < counter; i++)
+                {
+                    cache_x[i] = tmp_node->x;
+                    cache_y[i] = tmp_node->y;
+                    tmp_node = tmp_node->next_node;
+                }
+                HGCPolygon(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->counter,
+                           cache_x, cache_y, obj_pointer->fill_flag, obj_pointer->stroke_lenth);
+            }
             break;
         }
         default:
@@ -624,11 +640,16 @@ int hgp_object_zoom(HGP_OBJECT *object_ptr, double zoom_rate, double zoom_center
         HGP_POLYGON *obj_pointer = (HGP_POLYGON *)ptr;
         double center_x_cache = zoom_center_x;
         double center_y_cache = zoom_center_y;
+        HGP_POLYGON_NODE *tmp_node = obj_pointer->head;
         //turn
-        for (int i = 0; i < obj_pointer->counter; i++)
+        if (tmp_node != NULL)
         {
-            obj_pointer->x[i] = (obj_pointer->x[i] - center_x_cache) * zoom_rate + center_x_cache;
-            obj_pointer->y[i] = (obj_pointer->y[i] - center_y_cache) * zoom_rate + center_y_cache;
+            for (int i = 0; i < obj_pointer->counter; i++)
+            {
+                tmp_node->x = (tmp_node->x - center_x_cache) * zoom_rate + center_x_cache;
+                tmp_node->y = (tmp_node->y - center_y_cache) * zoom_rate + center_y_cache;
+                tmp_node = tmp_node->next_node;
+            }
         }
     }
     }
