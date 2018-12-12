@@ -51,9 +51,8 @@ typedef struct HGP_OBJECT
     struct HGP_OBJECT *next_object_node;
     struct HGP_OBJECT *previous_object_node;
     struct HGP_LAYER_INFO *father_layer_info;
-    int change_flag;//-1:disable;0:normal;1:changed
+    int change_flag; //-1:disable;0:normal;1:changed
 } HGP_OBJECT;
-
 
 typedef struct HGP_RECT
 {
@@ -90,6 +89,7 @@ typedef struct HGP_ARC
     unsigned long shell_color;
     double arc_start;
     double arc_value;
+    double stroke_lenth;
 } HGP_ARC;
 
 typedef struct HGP_FAN
@@ -123,8 +123,8 @@ typedef struct HGP_POLYGON_NODE
     double y;
     struct HGP_POLYGON_NODE *next_node;
     struct HGP_POLYGON_NODE *prev_node;
-    struct HGP_POLYGON* polygon_ptr;
-}HGP_POLYGON_NODE;
+    struct HGP_POLYGON *polygon_ptr;
+} HGP_POLYGON_NODE;
 
 typedef struct HGP_POLYGON
 {
@@ -132,12 +132,13 @@ typedef struct HGP_POLYGON
     int counter;
     HGP_POLYGON_NODE *head;
     double line_width;
-    unsigned long color;
+    int fill_flag;
+    unsigned long fill_color;
+    unsigned long line_color;
     double stroke_lenth;
-    unsigned int fill_color;
 } HGP_POLYGON;
-HGP_POLYGON_NODE * hgp_polygon_add_point(int insert_flag,HGP_POLYGON_NODE * target_node,HGP_POLYGON *polygon_ptr,double x,double y);
-HGP_POLYGON_NODE * hgp_polygon_del_point(HGP_POLYGON_NODE * target_node);
+HGP_POLYGON_NODE *hgp_polygon_add_point(int insert_flag, HGP_POLYGON_NODE *target_node, HGP_POLYGON *polygon_ptr, double x, double y);
+HGP_POLYGON_NODE *hgp_polygon_del_point(HGP_POLYGON_NODE *target_node);
 #define HGP_POLYGON_INSERT_HEAD 0
 #define HGP_POLYGON_INSERT_TAIL 1
 #define HGP_POLYGON_INSERT_FRONT_TAR 2
@@ -172,9 +173,9 @@ HGP_WINDOW_INFO *hgp_window_init(double x, double y, double window_location_x, d
 HGP_WINDOW_INFO *hgp_create_window(double x, double y, double window_location_x, double window_location_y);
 HGP_LAYER_INFO *hgp_add_layer(HGP_WINDOW_INFO *window);
 HGP_OBJECT *hgp_add_object(HGP_LAYER_INFO *layer, int type);
-HGP_OBJECT * hgp_delete_object(HGP_OBJECT *obj_ptr);
-HGP_LAYER_INFO * hgp_delete_layer(HGP_LAYER_INFO *layer_ptr);
-HGP_WINDOW_INFO * hgp_destroy_window(HGP_WINDOW_INFO *window_ptr);
+HGP_OBJECT *hgp_delete_object(HGP_OBJECT *obj_ptr);
+HGP_LAYER_INFO *hgp_delete_layer(HGP_LAYER_INFO *layer_ptr);
+HGP_WINDOW_INFO *hgp_destroy_window(HGP_WINDOW_INFO *window_ptr);
 void breakpoint();
 int hgp_update(int flag);
 int hgp_single_draw(HGP_OBJECT *object_ptr);
@@ -199,7 +200,7 @@ HGP_CIRCLE *hgp_circle_init(HGP_LAYER_INFO *layer_ptr,
 HGP_ARC *hgp_arc_init(HGP_LAYER_INFO *layer_ptr,
                       double x, double y, double r,
                       unsigned long shell_color,
-                      double arc_start, double arc_value);
+                      double arc_start, double arc_value,double stroke_lenth);
 
 HGP_FAN *hgp_fan_init(HGP_LAYER_INFO *layer_ptr,
                       double x, double y, double r,
@@ -211,6 +212,8 @@ HGP_FAN *hgp_fan_init(HGP_LAYER_INFO *layer_ptr,
 HGP_LINE *hgp_line_init(HGP_LAYER_INFO *layer_ptr, double start_x, double start_y, double end_x, double end_y,
                         unsigned long color, double line_width);
 
+HGP_POLYGON *hgp_polygon_init(HGP_LAYER_INFO *layer_ptr, double line_width, unsigned long line_color, int fill_flag,
+                              unsigned long fill_color, double stroke_lenth);
 //-----Object Operation-----//
 int hgp_object_move(HGP_OBJECT *obj_ptr, double direct_angle, double distance);
 int hgp_object_rotate(HGP_OBJECT *obj_ptr, double rotate_arc, int need_angle_input_1);

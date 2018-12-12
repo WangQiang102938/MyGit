@@ -392,6 +392,7 @@ int hgp_single_draw(HGP_OBJECT *object_ptr)
         case HGP_OBJECT_RECT_FLAG:
         {
             HGP_RECT *obj_pointer = object_ptr->pointer;
+            HgWSetWidth(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->stroke_lenth);
             HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
             HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->shell_color, HG_ColorDraw);
             HGCRectangle(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],
@@ -407,6 +408,7 @@ int hgp_single_draw(HGP_OBJECT *object_ptr)
         case HGP_OBJECT_CIRCLE_FLAG:
         {
             HGP_CIRCLE *obj_pointer = ((HGP_CIRCLE *)object_ptr->pointer);
+            HgWSetWidth(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->stroke_lenth);
             HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
             HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->shell_color, HG_ColorDraw);
             HGCCircle(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],
@@ -420,6 +422,7 @@ int hgp_single_draw(HGP_OBJECT *object_ptr)
         case HGP_OBJECT_ARC_FLAG:
         {
             HGP_ARC *obj_pointer = ((HGP_ARC *)object_ptr->pointer);
+            HgWSetWidth(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->stroke_lenth);
             HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->shell_color, HG_ColorDraw);
             HGCFan(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],
                    obj_pointer->x,
@@ -427,12 +430,13 @@ int hgp_single_draw(HGP_OBJECT *object_ptr)
                    obj_pointer->r,
                    obj_pointer->arc_start,
                    obj_pointer->arc_start + obj_pointer->arc_value,
-                   0, 0);
+                   0, obj_pointer->stroke_lenth);
             break;
         }
         case HGP_OBJECT_FAN_FLAG:
         {
             HGP_FAN *obj_pointer = ((HGP_FAN *)object_ptr->pointer);
+            HgWSetWidth(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->stroke_lenth);
             HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->shell_color, HG_ColorDraw);
             HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
             HGCFan(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag],
@@ -458,7 +462,7 @@ int hgp_single_draw(HGP_OBJECT *object_ptr)
         {
             HGP_POLYGON *obj_pointer = ((HGP_POLYGON *)object_ptr->pointer);
             HgWSetWidth(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->line_width);
-            HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->color, HG_ColorDraw);
+            HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->line_color, HG_ColorDraw);
             HGCSetColor(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->fill_color, HG_ColorFill);
             int counter = obj_pointer->counter;
             HGP_POLYGON_NODE *tmp_node = obj_pointer->head;
@@ -473,7 +477,7 @@ int hgp_single_draw(HGP_OBJECT *object_ptr)
                     tmp_node = tmp_node->next_node;
                 }
                 HGCPolygon(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->counter,
-                           cache_x, cache_y, obj_pointer->color, obj_pointer->stroke_lenth);
+                           cache_x, cache_y, obj_pointer->fill_flag, obj_pointer->stroke_lenth);
             }
             break;
         }
@@ -708,6 +712,7 @@ int hgp_object_rotate(HGP_OBJECT *object_ptr, double rotate_arc, int need_angle_
         double new_cos = old_cos * cos(rotate_arc) + old_sin * sin(rotate_arc);
         double new_sin = old_sin * cos(rotate_arc) - old_cos * sin(rotate_arc);
         obj_pointer->start_x = new_cos * lenth / 2;
+        break;
     }
     }
     if (object_ptr->change_flag == 0)
@@ -761,7 +766,7 @@ HGP_CIRCLE *hgp_circle_init(HGP_LAYER_INFO *layer_ptr,
 HGP_ARC *hgp_arc_init(HGP_LAYER_INFO *layer_ptr,
                       double x, double y, double r,
                       unsigned long shell_color,
-                      double arc_start, double arc_value)
+                      double arc_start, double arc_value, double stroke_lenth)
 {
     HGP_OBJECT *obj_ptr = (hgp_add_object(layer_ptr, HGP_OBJECT_ARC_FLAG));
     HGP_ARC *Operate_Arc_Pointer = obj_ptr->pointer;
@@ -772,6 +777,7 @@ HGP_ARC *hgp_arc_init(HGP_LAYER_INFO *layer_ptr,
     Operate_Arc_Pointer->shell_color = shell_color;
     Operate_Arc_Pointer->arc_start = arc_start;
     Operate_Arc_Pointer->arc_value = arc_value;
+    Operate_Arc_Pointer->stroke_lenth = stroke_lenth;
     return Operate_Arc_Pointer;
 }
 
@@ -812,6 +818,21 @@ HGP_LINE *hgp_line_init(HGP_LAYER_INFO *layer_ptr, double start_x, double start_
     return Operate_Obj_Pointer;
 }
 
+HGP_POLYGON *hgp_polygon_init(HGP_LAYER_INFO *layer_ptr, double line_width, unsigned long line_color,
+                              int fill_flag, unsigned long fill_color, double stroke_lenth)
+{
+    HGP_OBJECT *obj_ptr = hgp_add_object(layer_ptr, HGP_OBJECT_POLYGON_FLAG);
+    HGP_POLYGON *tmp_ptr = obj_ptr->pointer;
+    tmp_ptr->head = NULL;
+    tmp_ptr->fill_color = fill_color;
+    tmp_ptr->fill_flag = fill_flag;
+    tmp_ptr->counter = 0;
+    tmp_ptr->line_width = line_width;
+    tmp_ptr->line_color = line_color;
+    tmp_ptr->obj_ptr = obj_ptr;
+    tmp_ptr->stroke_lenth = stroke_lenth;
+    return tmp_ptr;
+}
 //thread test
 void thread()
 {

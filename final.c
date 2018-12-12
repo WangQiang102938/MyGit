@@ -19,7 +19,7 @@ int main()
         {
             world_array[j][i] = malloc(sizeof(world_rect));
             world_array[j][i]->this_rect = hgp_rect_init(layer1, j * 10 + 5, i * 10 + 5, 10, 10, HG_WHITE, HG_WHITE, 1, 0, 0);
-            world_array[j][i]->this_rect->obj_ptr->change_flag = 1;//dirty zone
+            world_array[j][i]->this_rect->obj_ptr->change_flag = 1; //dirty zone
             world_array[j][i]->left = NULL;
             world_array[j][i]->right = NULL;
             world_array[j][i]->up = NULL;
@@ -78,7 +78,7 @@ int main()
     food_generate();
     int foodflag = 0;
 
-    int timer = 1000 * 250;//maybe fastest
+    int timer = 1000 * 250; //maybe fastest
     struct timeval current_time;
     struct timeval prev_time;
     gettimeofday(&prev_time, NULL);
@@ -124,11 +124,13 @@ int main()
                         breakflag = 0;
                         goto JUMPUPDATE;
                     }
+                    goto MOVE;
                 }
             }
         }
         else
         {
+        MOVE:
             if (snake_move() == NULL)
             {
                 printf("You Lose\n");
@@ -154,7 +156,7 @@ int main()
 
 void food_generate()
 {
-    for (int i = 0; i < foodtotal-foodcount; i++)
+    for (int i = 0; i < foodtotal - foodcount; i++)
     {
         do
         {
@@ -204,6 +206,10 @@ void *snake_move()
         world_rect *tmp_ptr = snake_head_ptr;
         while (tmp_ptr->snake_node->snake_node != NULL)
         {
+            if (tmp_ptr->snake_node == snake_head_ptr)//death loop
+            {
+                break;
+            }
             tmp_ptr = tmp_ptr->snake_node;
         }
         tmp_ptr->snake_node = NULL;
@@ -212,7 +218,7 @@ void *snake_move()
     {
         snake_head_ptr->food = 0;
         foodcount--;
-        if (foodcount == 5)//low food limit
+        if (foodcount == 5) //low food limit
             food_generate();
     }
     return snake_head_ptr;

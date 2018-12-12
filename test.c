@@ -8,8 +8,12 @@ int main()
     hgp_add_layer(wid);
     HGP_RECT *rect1 = hgp_rect_init(wid->start_layer_node, 100, 100, 50, 50, HG_BLACK, HG_YELLOW, 1, 0, 2);
     HGP_CIRCLE *circle1 = hgp_circle_init(wid->start_layer_node, 100, 100, 30, HG_BLACK, HG_GREEN, 1, 1);
-    HGP_ARC *arc1 = hgp_arc_init(wid->start_layer_node, 100, 100, 40, HG_RED, M_PI, M_PI / 2);
-
+    HGP_ARC *arc1 = hgp_arc_init(wid->start_layer_node, 100, 100, 40, HG_RED, M_PI, M_PI / 2,5);
+    HGP_POLYGON *poly1=hgp_polygon_init(wid->start_layer_node,10,HG_BLACK,0,HG_GREEN,10);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_HEAD,NULL,poly1,50,50);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_HEAD,NULL,poly1,100,100);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_HEAD,NULL,poly1,100,150);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_HEAD,NULL,poly1,150,150);
     hgp_update(1);
     HgSleep(1);
     for (int i = 0; i < 50; i++)
