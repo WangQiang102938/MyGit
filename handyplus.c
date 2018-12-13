@@ -1,4 +1,14 @@
 #include "handyplus.h"
+// //check dangling pointer
+// int malloc_count = 0;
+// #define malloc(x)   \
+//     malloc(x);      \
+//     malloc_count++; \
+//     printf("malloc:%d\n", malloc_count);
+// #define free(x)     \
+//     free(x);        \
+//     malloc_count--; \
+//     printf("free:%d\n", malloc_count);
 
 HGP_WINDOW_INFO *hgp_window_init(double x, double y, double window_location_x, double window_location_y)
 {
@@ -224,6 +234,11 @@ HGP_POLYGON_NODE *hgp_polygon_add_point(int insert_flag, HGP_POLYGON_NODE *targe
 
 HGP_POLYGON_NODE *hgp_polygon_del_point(HGP_POLYGON_NODE *target_node) //return prev_node,if head return new head
 {
+    if (target_node == NULL)
+    {
+        return NULL;
+    }
+
     HGP_POLYGON_NODE *tmp_node = NULL;
     if (target_node->next_node != NULL)
     {
@@ -247,6 +262,10 @@ HGP_POLYGON_NODE *hgp_polygon_del_point(HGP_POLYGON_NODE *target_node) //return 
 
 HGP_OBJECT *hgp_delete_object(HGP_OBJECT *obj_ptr) //return prev_node,if head return new head
 {
+    if (obj_ptr == NULL)
+    {
+        return NULL;
+    }
     HGP_OBJECT *tmp_node = NULL;
     if (obj_ptr->next_object_node != NULL)
     {
@@ -276,6 +295,11 @@ HGP_OBJECT *hgp_delete_object(HGP_OBJECT *obj_ptr) //return prev_node,if head re
 
 HGP_LAYER_INFO *hgp_delete_layer(HGP_LAYER_INFO *layer_ptr) //return prev_node,if head return new head
 {
+    if (layer_ptr == NULL)
+    {
+        return NULL;
+    }
+
     HGP_LAYER_INFO *tmp_node = NULL;
     if (layer_ptr->next_layer_node != NULL)
     {
@@ -305,6 +329,11 @@ HGP_LAYER_INFO *hgp_delete_layer(HGP_LAYER_INFO *layer_ptr) //return prev_node,i
 
 HGP_WINDOW_INFO *hgp_destroy_window(HGP_WINDOW_INFO *window_ptr) //return prev_node,if head return new head
 {
+    if (window_ptr == NULL)
+    {
+        return NULL;
+    }
+
     HGP_WINDOW_INFO *tmp_node = NULL;
     if (window_ptr->previos_window_node == NULL)
     {
@@ -346,16 +375,19 @@ int hgp_update(int flag) //TODO:add obj
         while (1) //layer
         {
             object_ptr = layer_ptr->obj_start_node;
-            while (1) //object
+            if (object_ptr)
             {
-                hgp_single_draw(object_ptr);
-                if (object_ptr->next_object_node == NULL)
+                while (1) //object
                 {
-                    break;
-                }
-                else
-                {
-                    object_ptr = object_ptr->next_object_node;
+                    hgp_single_draw(object_ptr);
+                    if (object_ptr->next_object_node == NULL)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        object_ptr = object_ptr->next_object_node;
+                    }
                 }
             }
             HgLShow(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], 1);
