@@ -19,7 +19,7 @@ HGP_WINDOW_INFO *hgp_window_init(double x, double y, double window_location_x, d
     hgp_layer_flag_3.layer_reverse_flag = 2;
     hgp_layer_flag_3.nextnode = &hgp_layer_flag_1;
     HGP_LAYER_FLAG_CURRENT_PTR = &hgp_layer_flag_1;
-
+    fastdrawclearflag=1;
     return hgp_create_window(x, y, window_location_x, window_location_y);
 }
 
@@ -374,6 +374,23 @@ int hgp_update(int flag) //TODO:add obj
         layer_ptr = window_ptr->start_layer_node;
         while (1) //layer
         {
+            if (flag)
+            {
+                HgLClear(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->layer_reverse_flag]);
+                HgLShow(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->nextnode->layer_reverse_flag], 0);
+                fastdrawclearflag = 1;
+            }
+            else
+            {
+                HgLClear(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR /*->nextnode*/->layer_reverse_flag]);
+                if (fastdrawclearflag)
+                {
+                    HgLClear(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->layer_reverse_flag]);
+                    HgLClear(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->nextnode->layer_reverse_flag]);
+                    fastdrawclearflag = 0;
+                }
+                //HgLShow(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->nextnode->layer_reverse_flag], 0);
+            }
             object_ptr = layer_ptr->obj_start_node;
             if (object_ptr)
             {
@@ -391,8 +408,6 @@ int hgp_update(int flag) //TODO:add obj
                 }
             }
             HgLShow(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], 1);
-            HgLShow(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->nextnode->layer_reverse_flag], 0);
-            HgLClear(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->layer_reverse_flag]);
             if (layer_ptr->next_layer_node == NULL)
             {
                 break;
@@ -411,7 +426,8 @@ int hgp_update(int flag) //TODO:add obj
             window_ptr = window_ptr->next_window_node;
         }
     }
-    HGP_LAYER_FLAG_CURRENT_PTR = HGP_LAYER_FLAG_CURRENT_PTR->nextnode;
+    if (flag)
+        HGP_LAYER_FLAG_CURRENT_PTR = HGP_LAYER_FLAG_CURRENT_PTR->nextnode;
     return 1;
 }
 

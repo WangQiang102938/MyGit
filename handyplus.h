@@ -20,7 +20,7 @@ typedef struct HGP_LAYER_FLAG_LINKLIST
 HGP_LAYER_FLAG_LINKLIST hgp_layer_flag_1;
 HGP_LAYER_FLAG_LINKLIST hgp_layer_flag_2;
 HGP_LAYER_FLAG_LINKLIST hgp_layer_flag_3;
-
+int fastdrawclearflag;
 HGP_LAYER_FLAG_LINKLIST *HGP_LAYER_FLAG_CURRENT_PTR;
 
 //-----Object Struct-----//
