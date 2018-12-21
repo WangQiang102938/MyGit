@@ -123,13 +123,8 @@ typedef struct HGP_POLYGON_NODE
     double y;
     struct HGP_POLYGON_NODE *next_node;
     struct HGP_POLYGON_NODE *prev_node;
-<<<<<<< HEAD
-    struct HGP_POLYGON *polygon_ptr;
-} HGP_POLYGON_NODE;
-=======
     struct HGP_POLYGON* polygon_ptr;
 }HGP_POLYGON_NODE;
->>>>>>> df818d2a9060f426d5098c12b93805d9fdc8350b
 
 typedef struct HGP_POLYGON
 {

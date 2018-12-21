@@ -9,6 +9,7 @@
 //     free(x);        \
 //     malloc_count--; \
 //     printf("free:%d\n", malloc_count);
+int polycounter;
 
 HGP_WINDOW_INFO *hgp_window_init(double x, double y, double window_location_x, double window_location_y)
 {
@@ -19,7 +20,7 @@ HGP_WINDOW_INFO *hgp_window_init(double x, double y, double window_location_x, d
     hgp_layer_flag_3.layer_reverse_flag = 2;
     hgp_layer_flag_3.nextnode = &hgp_layer_flag_1;
     HGP_LAYER_FLAG_CURRENT_PTR = &hgp_layer_flag_1;
-    fastdrawclearflag=1;
+    fastdrawclearflag = 1;
     return hgp_create_window(x, y, window_location_x, window_location_y);
 }
 
@@ -256,6 +257,7 @@ HGP_POLYGON_NODE *hgp_polygon_del_point(HGP_POLYGON_NODE *target_node) //return 
         tmp_node = target_node->next_node;
     }
     target_node->polygon_ptr->counter--;
+    printf("poly_counter:%d\n",target_node->polygon_ptr->counter);
     free(target_node);
     return tmp_node;
 }
@@ -374,6 +376,7 @@ int hgp_update(int flag) //TODO:add obj
         layer_ptr = window_ptr->start_layer_node;
         while (1) //layer
         {
+            polycounter=0;
             if (flag)
             {
                 HgLClear(layer_ptr->lid[HGP_LAYER_FLAG_CURRENT_PTR->nextnode->layer_reverse_flag]);
@@ -527,6 +530,7 @@ int hgp_single_draw(HGP_OBJECT *object_ptr)
                 HGCPolygon(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->counter,
                            cache_x, cache_y, obj_pointer->fill_flag, obj_pointer->stroke_lenth);
             }
+            printf("Poly:%d\n",polycounter);polycounter++;
             break;
         }
         default:

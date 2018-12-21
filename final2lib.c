@@ -2,58 +2,68 @@
 
 int fighter_init(FIGHTER_1 *fighter, HGP_LAYER_INFO *layer, double size_rate)
 {
-    HGP_POLYGON_NODE *node[20];
     int counter = 0;
     double x = fighter->center_x;
     double y = fighter->center_y;
+    fighter->size_rate = size_rate;
 
     fighter->left_gun = hgp_rect_init(layer, x - 9 * size_rate, y + 3 * size_rate, 3 * size_rate, 9 * size_rate, HG_BLACK, HG_BLACK, 1, 0, 1);
     fighter->right_gun = hgp_rect_init(layer, x + 9 * size_rate, y + 3 * size_rate, 3 * size_rate, 9 * size_rate, HG_BLACK, HG_BLACK, 1, 0, 1);
 
-    fighter->shell = hgp_polygon_init(layer, 1, HG_BLACK, 1, HG_BLUE, 1);
+    fighter->shell = hgp_polygon_init(layer, 1, HG_BLACK, 1, fighter->color, 1);
 
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 0 * size_rate, y + 27 * size_rate);
-    counter++;
-
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 3 * size_rate, y + 12 * size_rate);
-    counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 3 * size_rate, y + 7 * size_rate);
-    counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 15 * size_rate, y - 1 * size_rate);
-    counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 15 * size_rate, y - 5 * size_rate);
-    counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 5 * size_rate, y - 3 * size_rate);
-    counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 9 * size_rate, y - 7 * size_rate);
-    counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 9 * size_rate, y - 11 * size_rate);
-    counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 5 * size_rate, y - 10 * size_rate);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 0 * size_rate, y + 27 * size_rate);
     counter++;
 
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 3 * size_rate, y - 8 * size_rate);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 3 * size_rate, y + 12 * size_rate);
     counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 3 * size_rate, y - 8 * size_rate);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 3 * size_rate, y + 7 * size_rate);
+    counter++;
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 15 * size_rate, y - 1 * size_rate);
+    counter++;
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 15 * size_rate, y - 5 * size_rate);
+    counter++;
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 5 * size_rate, y - 3 * size_rate);
+    counter++;
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 9 * size_rate, y - 7 * size_rate);
+    counter++;
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 9 * size_rate, y - 11 * size_rate);
+    counter++;
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 5 * size_rate, y - 10 * size_rate);
     counter++;
 
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 5 * size_rate, y - 10 * size_rate);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x + 3 * size_rate, y - 8 * size_rate);
     counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 9 * size_rate, y - 11 * size_rate);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 3 * size_rate, y - 8 * size_rate);
     counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 9 * size_rate, y - 7 * size_rate);
+
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 5 * size_rate, y - 10 * size_rate);
     counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 5 * size_rate, y - 3 * size_rate);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 9 * size_rate, y - 11 * size_rate);
     counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 15 * size_rate, y - 5 * size_rate);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 9 * size_rate, y - 7 * size_rate);
     counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 15 * size_rate, y - 1 * size_rate);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 5 * size_rate, y - 3 * size_rate);
     counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 3 * size_rate, y + 7 * size_rate);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 15 * size_rate, y - 5 * size_rate);
     counter++;
-    node[counter] = hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 3 * size_rate, y + 12 * size_rate);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 15 * size_rate, y - 1 * size_rate);
     counter++;
-    printf("counter:%d\n", counter);
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 3 * size_rate, y + 7 * size_rate);
+    counter++;
+    hgp_polygon_add_point(HGP_POLYGON_INSERT_TAIL, NULL, fighter->shell, x - 3 * size_rate, y + 12 * size_rate);
+    counter++;
+}
+
+int fighter_destroy(FIGHTER_1 *fighter)
+{
+    hgp_delete_object(fighter->shell->obj_ptr);
+    hgp_delete_object(fighter->left_gun->obj_ptr);
+    hgp_delete_object(fighter->right_gun->obj_ptr);
+    fighter->shell = NULL;
+    fighter->left_gun = NULL;
+    fighter->right_gun = NULL;
+    return 1;
 }
 
 int fighter_mirrow(FIGHTER_1 *fighter)
@@ -75,6 +85,8 @@ int fighter_move(FIGHTER_1 *fighter, double x, double y, int absolute_flag)
 {
     double move_x;
     double move_y;
+    if (x == 0 && y == 0)
+        return 0;
     if (absolute_flag)
     {
         move_x = x - fighter->center_x;
@@ -90,8 +102,10 @@ int fighter_move(FIGHTER_1 *fighter, double x, double y, int absolute_flag)
     HGP_POLYGON_NODE *tmp_node = fighter->shell->head;
     while (tmp_node)
     {
-        tmp_node->x += move_x;
-        tmp_node->y += move_y;
+        // printf("\nprev_x=%lf,prev_y=%lf\n", tmp_node->x, tmp_node->y);
+        tmp_node->x = tmp_node->x + move_x;
+        tmp_node->y = tmp_node->y + move_y; //unknow error
+        // printf("now__x=%lf,now__y=%lf\n\n\n", tmp_node->x, tmp_node->y);
         tmp_node = tmp_node->next_node;
         //printf("move\n");
     }
@@ -188,4 +202,62 @@ int check_timer(struct timeval *checked_time, int timer_ms)
     {
         return 0;
     }
+}
+
+int check_collapse(FIGHTER_1 *fighter, BULLET *bullet_list)
+{
+    BULLET_NODE *tmp_node = bullet_list->head;
+    while (tmp_node)
+    {
+        if (pow(tmp_node->obj_ptr->x - fighter->center_x, 2) + pow(tmp_node->obj_ptr->y - fighter->center_y, 2) < (pow(13 * fighter->size_rate + tmp_node->obj_ptr->r, 2)))
+        {
+            return 1;
+        }
+        tmp_node = tmp_node->next;
+    }
+    return 0;
+}
+
+int fighter_move_by_pathfile(FIGHTER_1 *fighter, FILE *pathfile)
+{
+    if (fighter->path_head_node == NULL)
+    {
+        enemy_fighter_path_list *tmp_list = malloc(sizeof(enemy_fighter_path_list));
+        enemy_fighter_path_list *tmp_list_prev = tmp_list;
+        tmp_list->next = NULL;
+        fighter->path_head_node = tmp_list;
+        while (fread(tmp_list, sizeof(enemy_fighter_path_list), 1, pathfile))
+        {
+            if (tmp_list->x > 0 && tmp_list->x < boarder_x &&
+                tmp_list->y > 0 && tmp_list->y < boarder_y)
+            {
+                tmp_list_prev->next = tmp_list; //set prev node next
+                tmp_list_prev = tmp_list;       //change prev node to current
+                if (tmp_list->next == NULL)     //path file end check
+                {
+                    break;
+                }
+                else
+                {
+                    tmp_list->next = malloc(sizeof(enemy_fighter_path_list));
+                    tmp_list = tmp_list->next;
+                }
+            }
+        }
+        fighter->path_current_node = fighter->path_head_node;
+        fseek(pathfile, 0L, SEEK_SET);
+    }
+    else if (fighter->path_current_node != NULL)
+    {
+        fighter_move(fighter, fighter->path_current_node->x, fighter->path_current_node->y, 1);
+        enemy_fighter_path_list *tmp = fighter->path_current_node->next;
+        free(fighter->path_current_node);
+        fighter->path_current_node = tmp;
+    }
+    else
+    {
+        fighter->path_head_node = NULL;
+        return 1;
+    }
+    return 0;
 }

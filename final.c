@@ -3,8 +3,8 @@
 int main()
 {
     HGP_WINDOW_INFO *window1 = hgp_window_init(500, 500, -1, -1);
-    HGP_LAYER_INFO *layer1 = hgp_add_layer(window1);
-    hgevent *event = NULL;
+    HGP_LAYER_INFO  *layer1  = hgp_add_layer(window1);
+    hgevent         *event   = NULL;
     HgSetEventMask(HG_KEY_EVENT_MASK);
     srand(time(NULL));
     int breakflag = 1;
@@ -17,32 +17,32 @@ int main()
     {
         for (int j = 0; j < 50; j++)
         {
-            world_array[j][i] = malloc(sizeof(world_rect));
-            world_array[j][i]->this_rect = hgp_rect_init(layer1, j * 10 + 5, i * 10 + 5, 10, 10, HG_WHITE, HG_WHITE, 1, 0, 0);
-            world_array[j][i]->this_rect->obj_ptr->change_flag = 1; //dirty zone
-            world_array[j][i]->left = NULL;
-            world_array[j][i]->right = NULL;
-            world_array[j][i]->up = NULL;
-            world_array[j][i]->down = NULL;
-            world_array[j][i]->snake_node = NULL;
-            world_array[j][i]->food = 0;
+            world_array[j][i]                                  = malloc(sizeof(world_rect));
+            world_array[j][i]->this_rect                       = hgp_rect_init(layer1, j * 10 + 5, i * 10 + 5, 10, 10, HG_WHITE, HG_WHITE, 1, 0, 0);
+            world_array[j][i]->this_rect->obj_ptr->change_flag = 1;                                                                                   //dirty zone
+            world_array[j][i]->left                            = NULL;
+            world_array[j][i]->right                           = NULL;
+            world_array[j][i]->up                              = NULL;
+            world_array[j][i]->down                            = NULL;
+            world_array[j][i]->snake_node                      = NULL;
+            world_array[j][i]->food                            = 0;
             if (j > 0)
             {
-                world_array[j][i]->left = world_array[j - 1][i];
+                world_array[j][i]->left        = world_array[j - 1][i];
                 world_array[j][i]->left->right = world_array[j][i];
             }
             if (i > 0)
             {
-                world_array[j][i]->down = world_array[j][i - 1];
+                world_array[j][i]->down     = world_array[j][i - 1];
                 world_array[j][i]->down->up = world_array[j][i];
             }
         }
-        world_array[0][i]->left = world_array[49][i];
+        world_array[0][i]->left        = world_array[49][i];
         world_array[0][i]->left->right = world_array[0][i];
     }
     for (int i = 0; i < 50; i++)
     {
-        world_array[i][49]->up = world_array[i][0];
+        world_array[i][49]->up       = world_array[i][0];
         world_array[i][49]->up->down = world_array[i][49];
     }
     //check NULLPTR,will cause undetected errors;
@@ -72,13 +72,13 @@ int main()
 
     //set head and first food generate
 
-    snake_direct = snake_down;
-    snake_head_ptr = world_array[rand() % 25 + 25][rand() % 25 + 25];
-    snake_head_ptr->snake_node = snake_head_ptr->up; //add a tail
+    snake_direct               = snake_down;
+    snake_head_ptr             = world_array[rand() % 25 + 25][rand() % 25 + 25];
+    snake_head_ptr->snake_node = snake_head_ptr->up;                               //add a tail
     food_generate();
     int foodflag = 0;
 
-    int timer = 1000 * 250; //maybe fastest
+    int timer = 1000 * 250;  //maybe fastest
     struct timeval current_time;
     struct timeval prev_time;
     gettimeofday(&prev_time, NULL);
@@ -104,23 +104,23 @@ int main()
                 {
                     switch (event->ch)
                     {
-                    case 'w':
+                    case 'w': 
                         if (snake_direct != snake_down)
                             snake_direct = snake_up;
                         break;
-                    case 'a':
+                    case 'a': 
                         if (snake_direct != snake_right)
                             snake_direct = snake_left;
                         break;
-                    case 's':
+                    case 's': 
                         if (snake_direct != snake_up)
                             snake_direct = snake_down;
                         break;
-                    case 'd':
+                    case 'd': 
                         if (snake_direct != snake_left)
                             snake_direct = snake_right;
                         break;
-                    case 0x1b:
+                    case 0x1b: 
                         breakflag = 0;
                         goto JUMPUPDATE;
                     }
@@ -130,7 +130,7 @@ int main()
         }
         else
         {
-        MOVE:
+        MOVE: 
             if (snake_move() == NULL)
             {
                 printf("You Lose\n");
@@ -146,7 +146,7 @@ int main()
             //HgSleep(0.2); //TODO:will block,
             prev_time = current_time;
         }
-    JUMPUPDATE:
+    JUMPUPDATE: 
     {
     }
     }
@@ -163,8 +163,8 @@ void food_generate()
             food_x = rand() % 50;
             food_y = rand() % 50;
         } while (world_array[food_x][food_y]->snake_node != NULL || world_array[food_x][food_y]->food == 1);
-        world_array[food_x][food_y]->food = 1;
-        world_array[food_x][food_y]->this_rect->fill_color = HG_RED;
+        world_array[food_x][food_y]->food                            = 1;
+        world_array[food_x][food_y]->this_rect->fill_color           = HG_RED;
         world_array[food_x][food_y]->this_rect->obj_ptr->change_flag = -1;
     }
     foodcount = foodtotal;
@@ -175,25 +175,25 @@ void *snake_move()
     //move head
     switch (snake_direct)
     {
-    case snake_up:
+    case snake_up: 
         snake_head_ptr = snake_head_ptr->up;
         if (snake_head_ptr->snake_node != NULL) //collapse with body
             return NULL;
         snake_head_ptr->snake_node = snake_head_ptr->down;
         break;
-    case snake_down:
+    case snake_down: 
         snake_head_ptr = snake_head_ptr->down;
         if (snake_head_ptr->snake_node != NULL)
             return NULL;
         snake_head_ptr->snake_node = snake_head_ptr->up;
         break;
-    case snake_left:
+    case snake_left: 
         snake_head_ptr = snake_head_ptr->left;
         if (snake_head_ptr->snake_node != NULL)
             return NULL;
         snake_head_ptr->snake_node = snake_head_ptr->right;
         break;
-    case snake_right:
+    case snake_right: 
         snake_head_ptr = snake_head_ptr->right;
         if (snake_head_ptr->snake_node != NULL)
             return NULL;
@@ -227,11 +227,11 @@ void *snake_move()
 void snake_update()
 {
     //set update flag,fast update
-    world_rect *tmp_rect_ptr = snake_head_ptr;
-    tmp_rect_ptr->this_rect->fill_color = HG_BLUE;
-    tmp_rect_ptr->this_rect->obj_ptr->change_flag = 1;
-    tmp_rect_ptr = tmp_rect_ptr->snake_node;
-    score = 1;
+    world_rect *tmp_rect_ptr                                 = snake_head_ptr;
+               tmp_rect_ptr->this_rect->fill_color           = HG_BLUE;
+               tmp_rect_ptr->this_rect->obj_ptr->change_flag = 1;
+               tmp_rect_ptr                                  = tmp_rect_ptr->snake_node;
+               score                                         = 1;
     while (1)
     {
         if (tmp_rect_ptr->snake_node == NULL)
@@ -240,9 +240,9 @@ void snake_update()
         }
         else
         {
-            tmp_rect_ptr->this_rect->fill_color = HG_BLACK + 1;
+            tmp_rect_ptr->this_rect->fill_color           = HG_BLACK + 1;
             tmp_rect_ptr->this_rect->obj_ptr->change_flag = 1;
-            tmp_rect_ptr = tmp_rect_ptr->snake_node;
+            tmp_rect_ptr                                  = tmp_rect_ptr->snake_node;
             score++;
         }
     }
