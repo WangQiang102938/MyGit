@@ -3,8 +3,8 @@
 int main()
 {
     HGP_LAYER_INFO *layer = hgp_add_layer(hgp_window_init(boarder_x, boarder_x, -1, -1));
-    FIGHTER_1 fighter;
-    FIGHTER_1 enemy_fighter;
+    FIGHTER fighter;
+    FIGHTER enemy_fighter;
     fighter.center_x = 200;
     fighter.center_y = 200;
     fighter.color = HG_BLUE;
@@ -14,7 +14,6 @@ int main()
     fighter_init(&fighter, layer, 2);
     fighter_init(&enemy_fighter, layer, 1);
     fighter_mirrow(&enemy_fighter);
-    //fighter_mirrow(&fighter);
     HgSetEventMask(HG_MOUSE_EVENT_MASK | HG_KEY_EVENT_MASK);
     hgp_update(1);
 
@@ -24,8 +23,9 @@ int main()
     my_bullet.head = NULL;
     BULLET enemy_bullet;
     enemy_bullet.color = HG_RED;
-    enemy_bullet.direct = BULLET_DIRECT_UP;
+    enemy_bullet.direct = BULLET_DIRECT_DOWN;
     enemy_bullet.head = NULL;
+
     timeval BULLET_MOVE_TIME = {0, 0};
     timeval BULLET_CREATE_TIME = {0, 0};
     timeval BREAKER_TIMER = {0, 0};
@@ -33,20 +33,17 @@ int main()
     timeval MOUSE_CHECK_TIMER = {0, 0};
     timeval ENEMY_READ_DEMO_TIMER = {0, 0};
 
-    int logflag = 0;
-    int logpath_counter = 1;
-    char logpathname[128] = {0};
+    logflag = 0;
+    logpath_counter = 1;
     sprintf(logpathname, "path%d.dat", logpath_counter);
-    FILE *logpath = NULL;
-    enemy_fighter_path_list *tmp_enemy_path = NULL;
-    enemy_fighter_path_list *tmp_enemy_path_head = NULL;
+    loginfo = NULL;
 
     int loadflag = 0;
     int loadcounter = 1;
     int loaddemoflag = 0;
     read_path_list *path_list = NULL;
     read_path_list *path_list_head = NULL;
-    FIGHTER_1 cachefighter;
+    FIGHTER cachefighter;
     cachefighter.path_current_node = NULL;
     cachefighter.path_head_node = NULL;
 
@@ -67,25 +64,11 @@ int main()
                     {
                         logflag = 1;
                         sprintf(logpathname, "path%d.dat", logpath_counter);
-                        logpath = fopen(logpathname, "w+");
-                        tmp_enemy_path = malloc(sizeof(enemy_fighter_path_list));
-                        tmp_enemy_path_head = tmp_enemy_path;
+                        loginfo = path_log_init(logpathname);
                     }
                     if (event->ch == '2' && logflag != 0)
                     {
-                        printf("log:%d\n", logflag);
-                        logflag++;
-                        tmp_enemy_path = tmp_enemy_path_head;
-                        while (tmp_enemy_path)
-                        {
-                            fwrite(tmp_enemy_path, sizeof(enemy_fighter_path_list), 1, logpath);
-                            enemy_fighter_path_list *cache = tmp_enemy_path;
-                            tmp_enemy_path = tmp_enemy_path->next;
-                            free(tmp_enemy_path);
-                        }
-                        tmp_enemy_path_head = NULL;
-                        fclose(logpath);
-                        logpath = NULL;
+                        path_log_write(&loginfo);
                         logpath_counter++;
                         logflag = 0;
                     }
@@ -118,21 +101,14 @@ int main()
             }
             if (logflag != 0)
             {
-                if (tmp_enemy_path->x != 0 && tmp_enemy_path->y != 0)
-                {
-                    tmp_enemy_path->next = malloc(sizeof(enemy_fighter_path_list));
-                    tmp_enemy_path = tmp_enemy_path->next;
-                    tmp_enemy_path->x = enemy_fighter.center_x;
-                    tmp_enemy_path->y = enemy_fighter.center_y;
-                    tmp_enemy_path->next = NULL;
-                    printf("log:%d\n", logflag);
-                    logflag++;
-                }
+                path_log(loginfo, enemy_fighter.center_x, enemy_fighter.center_y);
             }
         }
         if (check_timer(&BULLET_CREATE_TIME, 500))
         {
             create_bullet(&fighter, my_bullet.direct, &my_bullet, layer);
+            if (loaddemoflag)
+                create_bullet(&cachefighter, enemy_bullet.direct, &enemy_bullet, layer);
         }
         if (check_timer(&BULLET_MOVE_TIME, 50))
         {
@@ -141,7 +117,14 @@ int main()
             {
                 printf("shooted\n");
             }
-            // bullet_move(&enemy_bullet, enemy_bullet.direct);
+            if (loaddemoflag)
+            {
+                bullet_move(&enemy_bullet, 10);
+                if (check_collapse(&fighter, &enemy_bullet))
+                {
+                    printf("be shooted\n");
+                }
+            }
         }
         if (check_timer(&BREAKER_TIMER, 5000))
         {
@@ -151,7 +134,7 @@ int main()
         {
             hgp_update(0);
         }
-        if (check_timer(&ENEMY_READ_DEMO_TIMER, 100) == 1 && loadflag != 0)
+        if (check_timer(&ENEMY_READ_DEMO_TIMER, 10) == 1 && loadflag != 0)
         {
             if (loaddemoflag)
             {
@@ -164,7 +147,12 @@ int main()
             else
             {
                 fighter_init(&cachefighter, layer, 1.5);
+                fighter_mirrow(&cachefighter);
                 path_list = path_list_head;
+                for (int i = 1; i < rand() % loadcounter; i++)
+                {
+                    path_list = path_list->next;
+                }
                 fighter_move_by_pathfile(&cachefighter, path_list->path);
                 loaddemoflag = 1;
             }

@@ -35,4 +35,4 @@ void *snake_move();
 void snake_update();
 int score;
 int foodcount;
-const int foodtotal=10;//change this to modify num of food_generate
+const int foodtotal=50;//change this to modify num of food_generate

@@ -1,6 +1,6 @@
 #include "final2.h"
 
-int fighter_init(FIGHTER_1 *fighter, HGP_LAYER_INFO *layer, double size_rate)
+int fighter_init(FIGHTER *fighter, HGP_LAYER_INFO *layer, double size_rate)
 {
     int counter = 0;
     double x = fighter->center_x;
@@ -55,7 +55,7 @@ int fighter_init(FIGHTER_1 *fighter, HGP_LAYER_INFO *layer, double size_rate)
     counter++;
 }
 
-int fighter_destroy(FIGHTER_1 *fighter)
+int fighter_destroy(FIGHTER *fighter)
 {
     hgp_delete_object(fighter->shell->obj_ptr);
     hgp_delete_object(fighter->left_gun->obj_ptr);
@@ -66,7 +66,7 @@ int fighter_destroy(FIGHTER_1 *fighter)
     return 1;
 }
 
-int fighter_mirrow(FIGHTER_1 *fighter)
+int fighter_mirrow(FIGHTER *fighter)
 {
     HGP_POLYGON_NODE *tmp_node = fighter->shell->head;
     while (tmp_node)
@@ -81,7 +81,7 @@ int fighter_mirrow(FIGHTER_1 *fighter)
     fighter->right_gun->y = fighter->right_gun->y - (fighter->right_gun->y - fighter->center_y) * 2;
 }
 
-int fighter_move(FIGHTER_1 *fighter, double x, double y, int absolute_flag)
+int fighter_move(FIGHTER *fighter, double x, double y, int absolute_flag)
 {
     double move_x;
     double move_y;
@@ -116,7 +116,7 @@ int fighter_move(FIGHTER_1 *fighter, double x, double y, int absolute_flag)
     //printf("%lf,%lf\n", move_x, move_y);
 }
 
-int create_bullet(FIGHTER_1 *fighter, int bullet_direct, BULLET *bullet_list, HGP_LAYER_INFO *layer)
+int create_bullet(FIGHTER *fighter, int bullet_direct, BULLET *bullet_list, HGP_LAYER_INFO *layer)
 {
     double left_x = fighter->left_gun->x;
     double left_y = fighter->left_gun->y;
@@ -152,7 +152,7 @@ int bullet_move(BULLET *bullet_list, double move_distance)
         move_y = move_distance;
         break;
     case BULLET_DIRECT_DOWN:
-        move_y = -move_x;
+        move_y = -move_distance;
         break;
     case BULLET_DIRECT_LEFT:
         move_x = -move_distance;
@@ -204,13 +204,14 @@ int check_timer(struct timeval *checked_time, int timer_ms)
     }
 }
 
-int check_collapse(FIGHTER_1 *fighter, BULLET *bullet_list)
+int check_collapse(FIGHTER *fighter, BULLET *bullet_list)
 {
     BULLET_NODE *tmp_node = bullet_list->head;
     while (tmp_node)
     {
         if (pow(tmp_node->obj_ptr->x - fighter->center_x, 2) + pow(tmp_node->obj_ptr->y - fighter->center_y, 2) < (pow(13 * fighter->size_rate + tmp_node->obj_ptr->r, 2)))
         {
+            tmp_node->obj_ptr->x=-1;//move to out of boarder,next check will remove from list
             return 1;
         }
         tmp_node = tmp_node->next;
@@ -218,18 +219,18 @@ int check_collapse(FIGHTER_1 *fighter, BULLET *bullet_list)
     return 0;
 }
 
-int fighter_move_by_pathfile(FIGHTER_1 *fighter, FILE *pathfile)
+int fighter_move_by_pathfile(FIGHTER *fighter, FILE *pathfile)
 {
     if (fighter->path_head_node == NULL)
     {
-        enemy_fighter_path_list *tmp_list = malloc(sizeof(enemy_fighter_path_list));
-        enemy_fighter_path_list *tmp_list_prev = tmp_list;
+        fighter_path_list *tmp_list = malloc(sizeof(fighter_path_list));
+        fighter_path_list *tmp_list_prev = tmp_list;
         tmp_list->next = NULL;
         fighter->path_head_node = tmp_list;
-        while (fread(tmp_list, sizeof(enemy_fighter_path_list), 1, pathfile))
+        while (fread(tmp_list, sizeof(fighter_path_list), 1, pathfile))
         {
-            if (tmp_list->x > 0 && tmp_list->x < boarder_x &&
-                tmp_list->y > 0 && tmp_list->y < boarder_y)
+            if (tmp_list->x > -(fighter->size_rate * 30) && tmp_list->x < boarder_x + fighter->size_rate * 30 &&
+                tmp_list->y > -(fighter->size_rate * 30) && tmp_list->y < boarder_y + fighter->size_rate * 30)
             {
                 tmp_list_prev->next = tmp_list; //set prev node next
                 tmp_list_prev = tmp_list;       //change prev node to current
@@ -239,7 +240,7 @@ int fighter_move_by_pathfile(FIGHTER_1 *fighter, FILE *pathfile)
                 }
                 else
                 {
-                    tmp_list->next = malloc(sizeof(enemy_fighter_path_list));
+                    tmp_list->next = malloc(sizeof(fighter_path_list));
                     tmp_list = tmp_list->next;
                 }
             }
@@ -250,7 +251,7 @@ int fighter_move_by_pathfile(FIGHTER_1 *fighter, FILE *pathfile)
     else if (fighter->path_current_node != NULL)
     {
         fighter_move(fighter, fighter->path_current_node->x, fighter->path_current_node->y, 1);
-        enemy_fighter_path_list *tmp = fighter->path_current_node->next;
+        fighter_path_list *tmp = fighter->path_current_node->next;
         free(fighter->path_current_node);
         fighter->path_current_node = tmp;
     }
@@ -261,3 +262,50 @@ int fighter_move_by_pathfile(FIGHTER_1 *fighter, FILE *pathfile)
     }
     return 0;
 }
+
+log_prop *path_log_init(char *pathname)
+{
+    log_prop *loginfo = malloc(sizeof(log_prop));
+    loginfo->pathname=malloc(sizeof(char)*strlen(pathname));
+    strcpy(loginfo->pathname,pathname);
+    loginfo->log_file_path_ptr = fopen(pathname, "w+");
+    loginfo->head = malloc(sizeof(fighter_path_list));
+    loginfo->current_node = loginfo->head;
+    loginfo->node_counter = 0;
+    return loginfo;
+}
+
+int path_log(log_prop *loginfo, double x, double y)
+{
+    if (x != 0 && y != 0)
+    {
+        loginfo->current_node->next = malloc(sizeof(fighter_path_list));
+        loginfo->current_node = loginfo->current_node->next;
+        loginfo->current_node->x = x;
+        loginfo->current_node->y = y;
+        loginfo->current_node->next = NULL;
+        printf("log:%d\n", loginfo->node_counter);
+        loginfo->node_counter++;
+    }
+}
+
+int path_log_write(log_prop **loginfo_ptr)
+{
+    log_prop *loginfo = *loginfo_ptr;
+    fighter_path_list * tmp_node=loginfo->head;
+    fighter_path_list * free_node=NULL;
+    while(tmp_node)
+    {
+        fwrite(tmp_node,sizeof(fighter_path_list),1,loginfo->log_file_path_ptr);
+        free_node=tmp_node;
+        tmp_node=tmp_node->next;
+        free(free_node);
+    }
+    fclose(loginfo->log_file_path_ptr);
+    free(loginfo->pathname);
+    free(loginfo);
+    *loginfo_ptr=NULL;
+    return 1;
+}
+
+

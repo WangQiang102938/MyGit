@@ -218,7 +218,7 @@ void *snake_move()
     {
         snake_head_ptr->food = 0;
         foodcount--;
-        if (foodcount == 5) //low food limit
+        if (foodcount == 20) //low food limit
             food_generate();
     }
     return snake_head_ptr;
