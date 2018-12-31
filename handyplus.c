@@ -257,7 +257,7 @@ HGP_POLYGON_NODE *hgp_polygon_del_point(HGP_POLYGON_NODE *target_node) //return 
         tmp_node = target_node->next_node;
     }
     target_node->polygon_ptr->counter--;
-    printf("poly_counter:%d\n",target_node->polygon_ptr->counter);
+    // printf("poly_counter:%d\n",target_node->polygon_ptr->counter);
     free(target_node);
     return tmp_node;
 }
@@ -530,7 +530,7 @@ int hgp_single_draw(HGP_OBJECT *object_ptr)
                 HGCPolygon(object_ptr->father_layer_info->lid[HGP_LAYER_FLAG_CURRENT_PTR->layer_reverse_flag], obj_pointer->counter,
                            cache_x, cache_y, obj_pointer->fill_flag, obj_pointer->stroke_lenth);
             }
-            printf("Poly:%d\n",polycounter);polycounter++;
+            // printf("Poly:%d\n",polycounter);polycounter++;
             break;
         }
         default:

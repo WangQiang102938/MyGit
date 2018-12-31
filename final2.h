@@ -8,24 +8,39 @@
 #define BULLET_DIRECT_LEFT 2
 #define BULLET_DIRECT_RIGHT 3
 
+#define FIGHTER_IDENTITY_ME 1
+#define FIGHTER_IDENTITY_ENEMY 2
+
+#define FIGHTER_SIZE_RATE_MAX 5
+
 typedef struct timeval timeval;
+
 typedef struct FIGHTER //fighter info
 {
     double center_x;
     double center_y;
     double size_rate;
     unsigned long color;
-    int fighter_type;
+    int fighter_identity;
     HGP_POLYGON *shell;
     HGP_RECT *left_gun;
     HGP_RECT *right_gun;
     //other info
     struct fighter_path_list *path_head_node;
     struct fighter_path_list *path_current_node;
-    BULLET * bullet_info;
-    FILE * pathfile;
+    struct BULLET * bullet_info;
+    struct read_path_list * path_file;
     HGP_LAYER_INFO * layer_info;
 } FIGHTER;
+
+typedef struct FIGHTER_LIST
+{
+    struct FIGHTER_LIST * next;
+    int delete_flag;
+    FIGHTER * fighter_ptr;
+} FIGHTER_LIST;
+
+FIGHTER* control_fighter;
 
 typedef struct BULLET_NODE //bullet list node
 {
@@ -50,18 +65,21 @@ typedef struct fighter_path_list //path list
 typedef struct read_path_list //path file list
 {
     struct read_path_list *next;
+    fighter_path_list *path_list_head;
     FILE *path;
 } read_path_list;
 
-int fighter_init(FIGHTER *fighter1, HGP_LAYER_INFO *layer, double size_rate);
-int check_timer(struct timeval *checked_time, int timer_ms);
-int bullet_move(BULLET *bullet_list, double move_distance);
-int create_bullet(FIGHTER *fighter, int bullet_direct, BULLET *bullet_list, HGP_LAYER_INFO *layer);
-int fighter_move(FIGHTER *fighter, double x, double y, int absolute_flag);
+FIGHTER *fighter_init(HGP_LAYER_INFO *layer, double size_rate,int fighter_identity,BULLET *bullet_info,unsigned long color);
+int fighter_destroy(FIGHTER **fighter_ptr);
+FIGHTER * fighter_list_add(FIGHTER_LIST *fighter_list, FIGHTER *fighter);
+int fighter_list_del(FIGHTER_LIST **fighter_list_head_ptr); //delete flag setted node
 int fighter_mirrow(FIGHTER *fighter);
+int fighter_move(FIGHTER *fighter, double x, double y, int absolute_flag);
+int create_bullet(FIGHTER *fighter);
+int bullet_move(BULLET *bullet_list, double move_distance);
+int check_timer(struct timeval *checked_time, int timer_ms);
 int check_collapse(FIGHTER *fighter, BULLET *bullet_list);
-int fighter_destroy(FIGHTER *fighter);
-int fighter_move_by_pathfile(FIGHTER *fighter, FILE *pathfile);
+int fighter_move_by_pathfile(FIGHTER_LIST *fighter_list);
 
 typedef struct log_prop
 {
@@ -72,11 +90,21 @@ typedef struct log_prop
     int node_counter;
 } log_prop;
 
-log_prop *path_log_init(char *pathname);
+log_prop *path_log_init(char *pathname); 
 int path_log(log_prop *loginfo, double x, double y);
 int path_log_write(log_prop **loginfo_ptr);
 
 int logflag;
 int logpath_counter;
 char logpathname[128];
+
+int path_load(); //set global path(final2.h)
+int path_clean();
+int path_counter;
+
+//list:
+
+FIGHTER_LIST* fighter_list_head;
+read_path_list * pathfile_list_head;
 log_prop *loginfo;
+
