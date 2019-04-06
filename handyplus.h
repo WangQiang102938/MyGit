@@ -6,6 +6,8 @@
 #include <time.h>
 #include <sys/time.h>
 #include <pthread/pthread.h>
+#include "handyplusfunc.h"
+#include "handyplustruc.h"
 
 #define INIT_DEFAULT 0
 #define INIT_COSTOMIZE 1
@@ -123,8 +125,8 @@ typedef struct HGP_POLYGON_NODE
     double y;
     struct HGP_POLYGON_NODE *next_node;
     struct HGP_POLYGON_NODE *prev_node;
-    struct HGP_POLYGON* polygon_ptr;
-}HGP_POLYGON_NODE;
+    struct HGP_POLYGON *polygon_ptr;
+} HGP_POLYGON_NODE;
 
 typedef struct HGP_POLYGON
 {
@@ -200,7 +202,7 @@ HGP_CIRCLE *hgp_circle_init(HGP_LAYER_INFO *layer_ptr,
 HGP_ARC *hgp_arc_init(HGP_LAYER_INFO *layer_ptr,
                       double x, double y, double r,
                       unsigned long shell_color,
-                      double arc_start, double arc_value,double stroke_lenth);
+                      double arc_start, double arc_value, double stroke_lenth);
 
 HGP_FAN *hgp_fan_init(HGP_LAYER_INFO *layer_ptr,
                       double x, double y, double r,
