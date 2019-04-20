@@ -7,9 +7,20 @@
 #include <sys/time.h>
 #include <pthread/pthread.h>
 #include "handy.h"
+typedef struct HGP_STATUS
+{
+    int init_flag;
+    int Window_Count;
+    int Layer_Count;
+    int Model_Count;
+    int pointer_checker;
+    int double_cache_flag;
+    struct HGP_WINDOW_LIST *window_list_entry;
+}HGP_STATUS;
+HGP_STATUS hgp_status;
 //------------------------------------------------------
 //Window:
-HGP_WINDOW_PROP *hgplus_entry;
+struct HGP_WINDOW_PROP *hgplus_entry;
 
 typedef struct HGP_WINDOW_PROP
 {
@@ -18,23 +29,24 @@ typedef struct HGP_WINDOW_PROP
     double width;
     double height;
     int window_id;
-    int double_cache_mode;
+    int layer_mode;//-1:disable layer/0:single layer/1:double layer
     HGP_WINDOW_LIST *my_node;
-    HGP_LAYER_PROP *start_layer_prop;
-    HGP_WINDOW_LIST *entry_node;
+    HGP_LAYER_LIST *layer_head_node;
 } HGP_WINDOW_PROP;
 
 typedef struct HGP_WINDOW_LIST
 {
     struct HGP_WINDOW_LIST *Next;
-    struct HGP_WINDOW_LIST *This;
+    struct HGP_WINDOW_PROP *This;
     struct HGP_WINDOW_LIST *Prev;
 } HGP_WINDOW_LIST;
 //func
-HGP_WINDOW_PROP *hgp_window_init(double x, double y, double width, double height);
-HGP_WINDOW_PROP *hgp_window_addWindow(HGP_WINDOW_PROP *target_window, double x, double y, double width, double height);
+HGP_WINDOW_PROP *hgp_window_init();
+HGP_WINDOW_PROP *hgp_window_addWindow(double x, double y, double width, double height);
 int hgp_window_deleteWindow(HGP_WINDOW_PROP *target_window);
 int hgp_window_sync(HGP_WINDOW_PROP *target_window);
+//todo:add windowinfo sync function;
+//todo:add window adjust function:move zoom sizechange...
 //------------------------------------------------------
 //LAYER:
 typedef struct HGP_LAYER_PROP
@@ -42,6 +54,8 @@ typedef struct HGP_LAYER_PROP
     int layer_id[2];
     struct HGP_LAYER_PROP *my_node;
     int visible_flag;
+    struct HGP_COMMON_MODEL_LIST *model_head_node;
+    struct HGP_COMMON_MODEL_LIST *model_tail_node;
     //todo:object prop;
     struct HGP_WINDOW_PROP *window_prop;
 } HGP_LAYER_PROP;
@@ -49,7 +63,7 @@ typedef struct HGP_LAYER_PROP
 typedef struct HGP_LAYER_LIST
 {
     struct HGP_LAYER_LIST *Next;
-    struct HGP_LAYER_LIST *This;
+    struct HGP_LAYER_PROP *This;
     struct HGP_LAYER_LIST *Prev;
 } HGP_LAYER_LIST;
 //func
@@ -76,22 +90,24 @@ typedef struct HGP_COMMON_MODEL_PROP
     int change_flag;  //-1=disable,0=normal,1=changed(fast draw)
     double x;
     double y;
+    double rotate_arc;
+    double zoom_rate;
 } HGP_COMMON_MODEL_PROP;
 
 typedef struct HGP_COMMON_MODEL_LIST
 {
-    HGP_COMMON_MODEL_PROP *Next;
-    HGP_COMMON_MODEL_PROP *This;
-    HGP_COMMON_MODEL_PROP *Prev;
+    struct HGP_COMMON_MODEL_LIST *Next;
+    struct HGP_COMMON_MODEL_PROP *This;
+    struct HGP_COMMON_MODEL_LIST *Prev;
 } HGP_COMMON_MODEL_LIST;
 //func
-HGP_COMMON_MODEL_PROP *hgp_model_addModel(HGP_LAYER_PROP *target_layer, int type);
+HGP_COMMON_MODEL_PROP *hgp_model_addModel(HGP_LAYER_PROP *target_layer, int type,double x,double y, int isInsertTail);
 int hgp_model_deleteModel(HGP_COMMON_MODEL_PROP *target_model);
+//TODO:ADD MODEL QUEUE ORDER CHANGE FUNC
 int hgp_model_move_to(HGP_COMMON_MODEL_PROP *target_model, double target_x, double target_y);
 int hgp_model_move_byAngle(HGP_COMMON_MODEL_PROP *target_model, double direct_arc, double distance);
-int hgp_model_zoom(HGP_COMMON_MODEL_PROP *target_model, double zoom_rate);
-int hgp_model_rotate(HGP_COMMON_MODEL_PROP *target_model, double rotate_arc);
 int hgp_model_sync(HGP_COMMON_MODEL_PROP *target_model);
+int hgp_model_syncAll();
 //------------------------------------------------------
 //MODEL:
 
@@ -107,7 +123,6 @@ typedef struct HGP_RECT
     double height;
     unsigned long shell_color;
     unsigned long fill_color;
-    double rotate_arc;
     int fill_flag;
     int stroke_flag;
     double line_width;
@@ -128,7 +143,6 @@ typedef struct HGP_ARC
     HGP_COMMON_MODEL_PROP *model_prop;
     double r;
     unsigned long shell_color;
-    double arc_start;
     double arc_value;
     double line_width;
     double stroke;
@@ -142,7 +156,6 @@ typedef struct HGP_FAN
     unsigned long fill_color;
     int fill_flag;
     int stroke_flag;
-    double arc_start;
     double line_width;
     double arc_value;
 } HGP_FAN;
