@@ -321,6 +321,7 @@ int hgp_model_move_byAngle(HGP_COMMON_MODEL_PROP *target_model, double direct_ar
 int hgp_model_sync(HGP_COMMON_MODEL_PROP *target_model)
 {
     int window_id;
+
     switch (target_model->layer_prop->window_prop->layer_mode)
     {
     case -1:
@@ -335,6 +336,7 @@ int hgp_model_sync(HGP_COMMON_MODEL_PROP *target_model)
     default:
         return 0;
     }
+
     switch (target_model->model_type)
     {
     case HGP_MODELTYPE_RECT:
@@ -361,8 +363,40 @@ int hgp_model_sync(HGP_COMMON_MODEL_PROP *target_model)
     break;
     case HGP_MODELTYPE_ARC:
     {
-        
+        HGP_ARC *tmp_model_prop = target_model->model_ptr;
+        HgWSetWidth(window_id, tmp_model_prop->line_width);
+        HGCSetColor(window_id, tmp_model_prop->shell_color, HG_ColorDraw);
+        HGCFan(window_id, target_model->x, target_model->y,
+               tmp_model_prop->r, target_model->rotate_arc,
+               tmp_model_prop->arc_value, 0, 0);
     }
+    break;
+    case HGP_MODELTYPE_FAN:
+    {
+        HGP_FAN *tmp_model_prop = target_model->model_ptr;
+        HgWSetWidth(window_id, tmp_model_prop->line_width);
+        HGCSetColor(window_id, tmp_model_prop->fill_color, HG_ColorFill);
+        HGCSetColor(window_id, tmp_model_prop->shell_color, HG_ColorDraw);
+        HGCFan(window_id, target_model->x, target_model->y,
+               tmp_model_prop->r, target_model->rotate_arc,
+               tmp_model_prop->arc_value, tmp_model_prop->fill_flag,
+               tmp_model_prop->stroke_flag);
+    }
+    break;
+    case HGP_MODELTYPE_LINE:
+    {
+        HGP_LINE *tmp_model_prop = target_model->model_ptr;
+        HgWSetWidth(window_id, tmp_model_prop->line_width);
+        HGCSetColor(window_id, tmp_model_prop->color, HG_ColorDraw);
+        HgWLine(window_id, target_model->x, target_model->y,
+                target_model->x + tmp_model_prop->end_x,
+                target_model->y + tmp_model_prop->end_y);
+    }
+    break;
+    case HGP_MODELTYPE_POLYGON:
+    {
+    }
+    break;
     }
 }
 //---------------------------------------
