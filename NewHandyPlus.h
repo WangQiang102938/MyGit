@@ -16,7 +16,7 @@ typedef struct HGP_STATUS
     int pointer_checker;
     int double_cache_flag;
     struct HGP_WINDOW_LIST *window_list_entry;
-}HGP_STATUS;
+} HGP_STATUS;
 HGP_STATUS hgp_status;
 //------------------------------------------------------
 //Window:
@@ -29,9 +29,9 @@ typedef struct HGP_WINDOW_PROP
     double width;
     double height;
     int window_id;
-    int layer_mode;//-1:disable layer/0:single layer/1:double layer
     HGP_WINDOW_LIST *my_node;
     HGP_LAYER_LIST *layer_head_node;
+    char *window_title;
 } HGP_WINDOW_PROP;
 
 typedef struct HGP_WINDOW_LIST
@@ -52,6 +52,7 @@ int hgp_window_sync(HGP_WINDOW_PROP *target_window);
 typedef struct HGP_LAYER_PROP
 {
     int layer_id[2];
+    int double_cache_mode; //-1=disable layer;0=single layer;1=double layer;
     struct HGP_LAYER_PROP *my_node;
     int visible_flag;
     struct HGP_COMMON_MODEL_LIST *model_head_node;
@@ -67,7 +68,7 @@ typedef struct HGP_LAYER_LIST
     struct HGP_LAYER_LIST *Prev;
 } HGP_LAYER_LIST;
 //func
-HGP_LAYER_PROP *hgp_layer_addLayer(HGP_WINDOW_PROP *target_window);
+HGP_LAYER_PROP *hgp_layer_addLayer(HGP_WINDOW_PROP *target_window, int doubleCacheMode);
 int hgp_layer_deleteLayer(HGP_LAYER_PROP *target_layer);
 int hgp_layer_sync(HGP_LAYER_PROP *target_layer);
 //------------------------------------------------------
@@ -79,6 +80,7 @@ int hgp_layer_sync(HGP_LAYER_PROP *target_layer);
 #define HGP_MODELTYPE_FAN 4
 #define HGP_MODELTYPE_LINE 5
 #define HGP_MODELTYPE_POLYGON 6
+#define HGP_MODELTYPE_OVAL 7
 
 typedef struct HGP_COMMON_MODEL_PROP
 {
@@ -101,7 +103,7 @@ typedef struct HGP_COMMON_MODEL_LIST
     struct HGP_COMMON_MODEL_LIST *Prev;
 } HGP_COMMON_MODEL_LIST;
 //func
-HGP_COMMON_MODEL_PROP *hgp_model_addModel(HGP_LAYER_PROP *target_layer, int type,double x,double y, int isInsertTail);
+HGP_COMMON_MODEL_PROP *hgp_model_addModel(HGP_LAYER_PROP *target_layer, int type, double x, double y, int isInsertTail);
 int hgp_model_deleteModel(HGP_COMMON_MODEL_PROP *target_model);
 //TODO:ADD MODEL QUEUE ORDER CHANGE FUNC
 int hgp_model_move_to(HGP_COMMON_MODEL_PROP *target_model, double target_x, double target_y);
@@ -130,6 +132,7 @@ typedef struct HGP_RECT
 
 typedef struct HGP_CIRCLE
 {
+    HGP_COMMON_MODEL_PROP *model_prop;
     double r;
     unsigned long shell_color;
     unsigned long fill_color;
@@ -137,6 +140,18 @@ typedef struct HGP_CIRCLE
     int fill_flag;
     int stroke_flag;
 } HGP_CIRCLE;
+
+typedef struct HGP_OVAL//todo:
+{
+    HGP_COMMON_MODEL_PROP *model_prop;
+    double r1;
+    double r2;
+    unsigned long shell_color;
+    unsigned long fill_color;
+    double line_width;
+    int fill_flag;
+    int stroke_flag;
+} HGP_OVAL;
 
 typedef struct HGP_ARC
 {
@@ -173,6 +188,7 @@ typedef struct HGP_POLYGON
 {
     HGP_COMMON_MODEL_PROP *model_prop;
     HGP_POLYGON_NODE *start_node;
+    HGP_POLYGON_NODE *tail_node;
     unsigned long line_color;
     unsigned long fill_color;
     int fill_flag;
@@ -184,6 +200,7 @@ typedef struct HGP_POLYGON_NODE
 {
     struct HGP_POLYGON_NODE *next;
     struct HGP_POLYGON_NODE *prev;
+    struct HGP_POLYGON *polygon_prop;
     double x;
     double y;
 } HGP_POLYGON_NODE;
@@ -191,12 +208,13 @@ typedef struct HGP_POLYGON_NODE
 #define HGP_MODEL_POLYGON_INSERT_front 1
 #define HGP_MODEL_POLYGON_INSERT_back 2
 #define HGP_MODEL_POLYGON_INSERT_tail 3
+
 HGP_POLYGON_NODE *hgp_model_polygon_addPoint(HGP_POLYGON *target_polygon, int insert_location, HGP_POLYGON_NODE *target_node, double x, double y);
 int hgp_model_polygon_delPoint(int mode, HGP_POLYGON_NODE *target_node, int target_count);
 //model init;
-HGP_RECT *hgp_model_rectInit(HGP_LAYER_PROP *target_layer, double x, double y, double width, double height, unsigned long shell_color, unsigned long fill_color, double rotate_arc, double line_width, int fill_flag, int stroke_flag);
-HGP_CIRCLE *hgp_model_circleInit(HGP_LAYER_PROP *target_layer, double x, double y, double r, unsigned long shell_color, unsigned long fill_color, double line_width, int fill_flag, int stroke_flag);
-HGP_ARC *hgp_model_arcInit(HGP_LAYER_PROP *target_layer, double x, double y, double r, unsigned long shell_color, double arc_start, double arc_value, double line_width);
-HGP_FAN *hgp_model_fanInit(HGP_LAYER_PROP *target_layer, double x, double y, double r, unsigned long shell_color, unsigned long fill_color, double are_start, double arc_value, double line_width, int fill_flag, int stroke_flag);
-HGP_LINE *hgp_model_lineInit(HGP_LAYER_PROP *target_layer, double x, double y, double end_x, double end_y, unsigned long line_color, double line_width); //end_x,end_y is relative coordinate of x,y
-HGP_POLYGON *hgp_model_polygonInit(HGP_LAYER_PROP *target_layer, double x, double y, unsigned long line_color, unsigned long fill_color, double line_width, int fill_flag, int stroke_flag);
+HGP_RECT *hgp_model_rectInit(HGP_LAYER_PROP *target_layer, double x, double y, double width, double height, unsigned long shell_color, unsigned long fill_color, double rotate_arc, double line_width, int fill_flag, int stroke_flag, int isInsertTail);
+HGP_CIRCLE *hgp_model_circleInit(HGP_LAYER_PROP *target_layer, double x, double y, double r, unsigned long shell_color, unsigned long fill_color, double line_width, int fill_flag, int stroke_flag, int isInsertTail);
+HGP_ARC *hgp_model_arcInit(HGP_LAYER_PROP *target_layer, double x, double y, double r, unsigned long shell_color, double arc_start, double arc_value, double line_width, int isInsertTail);
+HGP_FAN *hgp_model_fanInit(HGP_LAYER_PROP *target_layer, double x, double y, double r, unsigned long shell_color, unsigned long fill_color, double arc_start, double arc_value, double line_width, int fill_flag, int stroke_flag, int isInsertTail);
+HGP_LINE *hgp_model_lineInit(HGP_LAYER_PROP *target_layer, double x, double y, double end_x, double end_y, unsigned long line_color, double line_width, int isInsertTail); //end_x,end_y is relative coordinate of x,y
+HGP_POLYGON *hgp_model_polygonInit(HGP_LAYER_PROP *target_layer, double x, double y, unsigned long line_color, unsigned long fill_color, double line_width, int fill_flag, int stroke_flag, int isInsertTail);
